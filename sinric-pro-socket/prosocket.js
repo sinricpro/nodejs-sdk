@@ -9,4 +9,8 @@ headers:{
 
 client.on('open',()=>{
     console.log('Connected to sinric pro')
-})
+});
+
+client.on('message',(data)=>{
+    console.log(data)
+});
