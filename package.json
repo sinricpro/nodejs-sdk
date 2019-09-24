@@ -1,0 +1,23 @@
+{
+  "name": "sinricpro",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sinricpro/nodejs-sdk.git"
+  },
+  "author": "Dhanush",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sinricpro/nodejs-sdk/issues"
+  },
+  "homepage": "https://github.com/sinricpro/nodejs-sdk#readme",
+  "dependencies": {
+    "dgram": "^1.0.1",
+    "ws": "^7.1.2"
+  }
+}
