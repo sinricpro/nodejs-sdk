@@ -1,8 +1,19 @@
-appKey = "";
-secretKey = "";
-deviceId1 = "";
-deviceId2 = "";
-deviceId3 = "";
-deviceId = [deviceId1,deviceId2,deviceId3].join(';');
+const credential={
+    appkey: "",
+    secretKey: ""
+}
 
-module.exports={appKey,secretKey,deviceId}
+const deviceIds={
+    deviceId1: "",
+    deviceId2: "",
+    deviceId3: ""   
+}
+let deviceIdT=[];
+
+for (var key in deviceIds){
+    if(deviceIds.hasOwnProperty(key)){
+        deviceIdT.push(deviceIds[key]);
+    }
+}
+const deviceIdArr = deviceIdT.join(';');
+module.exports= {appKey: credential.appkey,secretKey: credential.secretKey,deviceId: deviceIdArr}
