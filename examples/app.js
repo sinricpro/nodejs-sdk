@@ -1,7 +1,7 @@
 const app = require('../index');
 
-function powerState(data){
-console.log(data);
+function powerState(deviceId,state){
+console.log(deviceId,state);
 }
 
 callbacks={
