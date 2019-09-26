@@ -1,11 +1,12 @@
 const app = require('../index');
 
-function powerState(deviceId,state){
-console.log(deviceId,state);
+function powerState(deviceId, state) {
+  // eslint-disable-next-line no-console
+  console.log(deviceId, state);
 }
 
-callbacks={
-setPowerState: powerState
-}
+const callbacks = {
+  setPowerState: powerState,
+};
 
 app(callbacks);
