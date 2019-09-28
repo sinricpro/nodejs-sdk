@@ -1,11 +1,25 @@
 const app = require('../index');
 
-function powerState(deviceId, state) {
-  console.log(deviceId, state);
+function setPowerState(deviceId, data) {
+  console.log(deviceId, data);
+}
+function setPowerLevel(deviceId, data) {
+  console.log(deviceId, data);
+}
+
+function adjustPowerLevel(deviceId, data) {
+  console.log(deviceId, data);
+}
+
+function setColor(deviceId, data) {
+  console.log(deviceId, data);
 }
 
 const callbacks = {
-  setPowerState: powerState,
+  setPowerState,
+  setPowerLevel,
+  adjustPowerLevel,
+  setColor,
 };
 
 app(callbacks);
