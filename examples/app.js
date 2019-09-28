@@ -15,11 +15,20 @@ function setColor(deviceId, data) {
   console.log(deviceId, data);
 }
 
+function setRangeValue(deviceId, data) {
+  console.log(deviceId, data);
+}
+function setLockState(deviceId, data) {
+  console.log(deviceId, data);
+}
+
 const callbacks = {
   setPowerState,
   setPowerLevel,
   adjustPowerLevel,
   setColor,
+  setRangeValue,
+  setLockState,
 };
 
 app(callbacks);
