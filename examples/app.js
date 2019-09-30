@@ -22,6 +22,23 @@ function setLockState(deviceId, data) {
   console.log(deviceId, data);
 }
 
+function setBrightness(deviceId, data) {
+  console.log(deviceId, data);
+}
+
+function setVolume(deviceId, data) {
+  console.log(deviceId, data);
+}
+
+function adjustVolume(deviceId, data) {
+  console.log(deviceId, data);
+}
+
+function setMute(deviceId, data) {
+  console.log(deviceId, data);
+}
+
+
 const callbacks = {
   setPowerState,
   setPowerLevel,
@@ -29,6 +46,10 @@ const callbacks = {
   setColor,
   setRangeValue,
   setLockState,
+  setBrightness,
+  setVolume,
+  adjustVolume,
+  setMute,
 };
 
 app(callbacks);
