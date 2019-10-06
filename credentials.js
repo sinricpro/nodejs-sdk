@@ -17,4 +17,6 @@ for (let key in deviceIds) {
 }
 
 const deviceIdArr = deviceIdT.join(';');
-module.exports = { appKey: credential.appkey, secretKey: credential.secretKey, deviceId: deviceIdArr };
+module.exports = {
+  appKey: credential.appkey, secretKey: credential.secretKey, deviceId: deviceIdArr, deviceId1: deviceIds.deviceId1,
+};

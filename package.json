@@ -18,6 +18,7 @@
   "homepage": "https://github.com/sinricpro/nodejs-sdk#readme",
   "dependencies": {
     "dgram": "^1.0.1",
+    "uuid": "^3.3.3",
     "ws": "^7.1.2"
   },
   "devDependencies": {
