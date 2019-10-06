@@ -66,5 +66,5 @@ const callbacks = {
 SinricPro(callbacks);
 
 setInterval(() => {
-  raiseEvent(eventNames.powerState, deviceId1, { state: 'ON' });
+  raiseEvent(eventNames.powerState, deviceId1, { state: 'On' });
 }, 2000);
