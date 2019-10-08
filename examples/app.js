@@ -1,4 +1,4 @@
-const { deviceId1 } = require('../credential');
+const { deviceId1, deviceId2 } = require('../credential');
 const { SinricPro, raiseEvent, eventNames } = require('../index');
 
 function setPowerState(deviceId, data) {
@@ -66,5 +66,6 @@ const callbacks = {
 SinricPro(callbacks);
 
 setInterval(() => {
-  raiseEvent(eventNames.powerState, deviceId1, { state: 'On' });
+  // raiseEvent(eventNames.powerState, deviceId1, { state: 'On' });
+  raiseEvent(eventNames.setBrightness, '5d80ac5713fa175e99ac01a4', { brightness: 90 });
 }, 2000);
