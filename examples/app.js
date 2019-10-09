@@ -67,5 +67,7 @@ SinricPro(callbacks);
 
 setInterval(() => {
   // raiseEvent(eventNames.powerState, deviceId1, { state: 'On' });
-  raiseEvent(eventNames.setBrightness, '5d80ac5713fa175e99ac01a4', { brightness: 90 });
+  // raiseEvent(eventNames.setBrightness, 'deviceId', { brightness: 44 });
+  // raiseEvent(eventNames.powerLevel, 'deviceId', { powerLevel: 44 });
+  raiseEvent(eventNames.color, 'DeviceId', { color: { b: 255, g: 255, r: 255 } });
 }, 2000);
