@@ -71,4 +71,5 @@ setInterval(() => {
   // raiseEvent(eventNames.powerLevel, 'deviceId', { powerLevel: 44 });
   // raiseEvent(eventNames.color, 'DeviceId', { color: { b: 0, g: 0, r: 0 } });
   // raiseEvent(eventNames.colorTemperature, 'Deviceid', { colorTemperature: 8 });
+  raiseEvent(eventNames.doorBell, 'DeviceId', { state: 'pressed' });
 }, 2000);
