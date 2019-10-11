@@ -69,5 +69,6 @@ setInterval(() => {
   // raiseEvent(eventNames.powerState, deviceId1, { state: 'On' });
   // raiseEvent(eventNames.setBrightness, 'deviceId', { brightness: 44 });
   // raiseEvent(eventNames.powerLevel, 'deviceId', { powerLevel: 44 });
-  raiseEvent(eventNames.color, 'DeviceId', { color: { b: 255, g: 255, r: 255 } });
+  // raiseEvent(eventNames.color, 'DeviceId', { color: { b: 0, g: 0, r: 0 } });
+  // raiseEvent(eventNames.colorTemperature, 'Deviceid', { colorTemperature: 8 });
 }, 2000);
