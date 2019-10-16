@@ -1,6 +1,6 @@
 {
   "name": "sinricpro",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Sinric Pro Nodejs SDK",
   "main": "index.js",
   "scripts": {
@@ -21,6 +21,7 @@
     "uuid": "^3.3.3",
     "ws": "^7.1.2"
   },
+  "keywords": ["sinricpro","sinric"],
   "devDependencies": {
     "eslint": "^6.4.0",
     "eslint-config-airbnb-base": "^14.0.0",

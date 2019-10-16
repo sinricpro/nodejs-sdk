@@ -12,11 +12,40 @@ npm install sinricpro
   
   [Crypto](https://nodejs.org/api/crypto.html)
 
+  [uuid](https://www.npmjs.com/package/uuid)
 
-### Example
 
-    const { deviceId1, deviceId2 } = require('../credential');
-    const { SinricPro, raiseEvent, eventNames } = require('../index');
+
+### Add a credential file into your root folder (credential.js)
+
+    const credential = {
+        appkey: '',
+        secretKey: '',
+    };
+
+    const deviceIds = {
+        deviceId1: '',
+        deviceId2: '',
+        deviceId3: '',
+    };
+    let deviceIdT = [];
+
+    for (let key in deviceIds) {
+        if (deviceIds.hasOwnProperty(key)) {
+            deviceIdT.push(deviceIds[key]);
+        }
+    }
+
+    const deviceIdArr = deviceIdT.join(';');
+        module.exports = {
+            appKey: credential.appkey, secretKey: credential.secretKey, deviceId: deviceIdArr, deviceId1: deviceIds.deviceId1,
+    };
+
+
+### Example (app.js)
+
+    const { deviceId1, deviceId2 } = require('./credential');
+    const { SinricPro, raiseEvent, eventNames } = require('sinricpro');
 
     function setPowerState(deviceId, data) {
         console.log(deviceId, data);
