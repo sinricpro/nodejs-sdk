@@ -82,5 +82,5 @@ setInterval(() => {
   // raiseEvent(eventNames.channel, 'DeviceId', { channel: { name: 'HBO' } });
   // raiseEvent(eventNames.mode, 'DeviceId', { mode: 'MOVIE' });
   // raiseEvent(eventNames.lock, 'DeviceId', { state: 'LOCKED' });
-  raiseEvent(eventNames.mute, 'DeviceId', { mute: true });
+  // raiseEvent(eventNames.mute, 'DeviceId', { mute: true });
 }, 2000);
