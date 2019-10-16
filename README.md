@@ -9,6 +9,7 @@ npm install sinricpro
 ### Dependencies
 
   [Websockets](https://www.npmjs.com/package/ws)
+  
   [Crypto](https://nodejs.org/api/crypto.html)
 
 
