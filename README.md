@@ -38,15 +38,14 @@ npm install sinricpro
 
     const deviceIdArr = deviceIdT.join(';');
         module.exports = {
-            appKey: credential.appkey, secretKey: credential.secretKey, deviceId: deviceIdArr, deviceId1: deviceIds.deviceId1,
+            appKey: credential.appkey, secretKey: credential.secretKey, deviceId: deviceIdArr,
     };
 
 
 ### Example (app.js)
 
-    const { deviceId1, deviceId2 } = require('./credential');
     const { SinricPro, raiseEvent, eventNames } = require('sinricpro');
-
+    const deviceid1 = 'Your Device Id'
     function setPowerState(deviceId, data) {
         console.log(deviceId, data);
         return true;
