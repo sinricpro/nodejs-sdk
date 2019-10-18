@@ -1,3 +1,4 @@
 node_modules/
 .vscode/
 credential.js
+.idea/
