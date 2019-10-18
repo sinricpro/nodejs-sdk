@@ -49,7 +49,7 @@ npm install sinricpro
 
 ### Example (app.js)
 ```javascript
-    const { SinricPro, raiseEvent, eventNames } = require('../index');
+    const { SinricPro, raiseEvent, eventNames } = require('sinricpro');
     
     function setPowerState(deviceId, data) {
       console.log(deviceId, data);
