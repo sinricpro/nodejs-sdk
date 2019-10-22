@@ -119,23 +119,23 @@ npm install sinricpro
     SinricProActions(sinricpro, callbacks);
 
     setInterval(() => {
-      raiseEvent(sinricpro, eventNames.powerState, 'deviceId', { state: 'On' });
-      raiseEvent(sinricpro, eventNames.setBrightness, 'deviceId', { brightness: 44 });
-      raiseEvent(sinricpro, eventNames.powerLevel, 'deviceId', { powerLevel: 44 });
-      raiseEvent(sinricpro, eventNames.color, 'DeviceId', { color: { b: 0, g: 0, r: 0 } });
-      raiseEvent(sinricpro, eventNames.colorTemperature, 'Deviceid', { colorTemperature: 8 });
-      raiseEvent(sinricpro, eventNames.doorBell, 'DeviceId', { state: 'pressed' });
-      raiseEvent(sinricpro, eventNames.thermostatMode, 'DeviceId', { thermostatMode: 'AUTO' });
-      raiseEvent(sinricpro, eventNames.rangvalue, 'DeviceId', { rangvalue: 3 });
-      raiseEvent(sinricpro, eventNames.motion, 'DeviceId', { state: 'detected' });
-      raiseEvent(sinricpro, eventNames.contact, 'DeviceId', { state: 'closed' });
-      raiseEvent(sinricpro, eventNames.setVolume, 'DeviceId', { volume: 29 });
-      raiseEvent(sinricpro, eventNames.selectInput, 'DeviceId', { input: 'HDMI' });
-      raiseEvent(sinricpro, eventNames.media, 'DeviceId', { control: 'FastForward' });
-      raiseEvent(sinricpro, eventNames.channel, 'DeviceId', { channel: { name: 'HBO' } });
-      raiseEvent(sinricpro, eventNames.mode, 'DeviceId', { mode: 'MOVIE' });
-      raiseEvent(sinricpro, eventNames.lock, 'DeviceId', { state: 'LOCKED' });
-      raiseEvent(sinricpro, eventNames.mute, 'DeviceId', { mute: true });
+      // raiseEvent(sinricpro, eventNames.powerState, 'deviceId', { state: 'On' });
+      // raiseEvent(sinricpro, eventNames.setBrightness, 'deviceId', { brightness: 44 });
+      // raiseEvent(sinricpro, eventNames.powerLevel, 'deviceId', { powerLevel: 44 });
+      // raiseEvent(sinricpro, eventNames.color, 'DeviceId', { color: { b: 0, g: 0, r: 0 } });
+      // raiseEvent(sinricpro, eventNames.colorTemperature, 'Deviceid', { colorTemperature: 8 });
+      // raiseEvent(sinricpro, eventNames.doorBell, 'DeviceId', { state: 'pressed' });
+      // raiseEvent(sinricpro, eventNames.thermostatMode, 'DeviceId', { thermostatMode: 'AUTO' });
+      // raiseEvent(sinricpro, eventNames.rangvalue, 'DeviceId', { rangvalue: 3 });
+      // raiseEvent(sinricpro, eventNames.motion, 'DeviceId', { state: 'detected' });
+      // raiseEvent(sinricpro, eventNames.contact, 'DeviceId', { state: 'closed' });
+      // raiseEvent(sinricpro, eventNames.setVolume, 'DeviceId', { volume: 29 });
+      // raiseEvent(sinricpro, eventNames.selectInput, 'DeviceId', { input: 'HDMI' });
+      // raiseEvent(sinricpro, eventNames.media, 'DeviceId', { control: 'FastForward' });
+      // raiseEvent(sinricpro, eventNames.channel, 'DeviceId', { channel: { name: 'HBO' } });
+      // raiseEvent(sinricpro, eventNames.mode, 'DeviceId', { mode: 'MOVIE' });
+      // raiseEvent(sinricpro, eventNames.lock, 'DeviceId', { state: 'LOCKED' });
+      // raiseEvent(sinricpro, eventNames.mute, 'DeviceId', { mute: true });
     }, 2000);
 
 ```

@@ -1,4 +1,4 @@
-const { appKey, deviceId, secretKey } = require('../credentials');
+const { appKey, deviceId, secretKey } = require('../credential');
 const {
   SinricPro, SinricProActions, raiseEvent, eventNames,
 } = require('../index');

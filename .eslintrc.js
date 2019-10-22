@@ -3,5 +3,6 @@ module.exports = {
 rules:{
     'no-console': 'off',
     'max-len': 'off',
-    'prefer-const':'off'
+    'prefer-const':'off',
+    'no-underscore-dangle':'off',
 }};
