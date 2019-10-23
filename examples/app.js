@@ -1,4 +1,4 @@
-const { appKey, deviceId, secretKey } = require('../credential');
+const { appKey, deviceId, secretKey, deviceIds } = require('./credentials');
 const {
   SinricPro, SinricProActions, raiseEvent, eventNames,
 } = require('../index');
@@ -17,7 +17,23 @@ function adjustPowerLevel(deviceid, data) {
   return true;
 }
 
+function setBrightness(deviceid, data) {
+  console.log(deviceid, data);
+  return true;
+}
+
+
+function adjustBrightness(deviceid, data) {
+  console.log(deviceid, data);
+  return true;
+}
+
 function setColor(deviceid, data) {
+  console.log(deviceid, data);
+  return true;
+}
+
+function setThermostatMode(deviceid, data) {
   console.log(deviceid, data);
   return true;
 }
@@ -26,12 +42,8 @@ function setRangeValue(deviceid, data) {
   console.log(deviceid, data);
   return true;
 }
-function setLockState(deviceid, data) {
-  console.log(deviceid, data);
-  return true;
-}
 
-function setBrightness(deviceid, data) {
+function adjustRangeValue(deviceid, data) {
   console.log(deviceid, data);
   return true;
 }
@@ -46,11 +58,50 @@ function adjustVolume(deviceid, data) {
   return true;
 }
 
+function selectInput(deviceid, data) {
+  console.log(deviceid, data);
+  return true;
+}
+
+function mediaControl(deviceid, data) {
+  console.log(deviceid, data);
+  return true;
+}
+
+function changeChannel(deviceid, data) {
+  console.log(deviceid, data);
+  return true;
+}
+
+function skipChannels(deviceid, data) {
+  console.log(deviceid, data);
+  return true;
+}
+
+function setBands(deviceid, data) {
+  console.log(deviceid, data);
+  return true;
+}
+
+function adjustBands(deviceid, data) {
+  console.log(deviceid, data);
+  return true;
+}
+
+function setMode(deviceid, data) {
+  console.log(deviceid, data);
+  return true;
+}
+
 function setMute(deviceid, data) {
   console.log(deviceid, data);
   return true;
 }
 
+function setLockState(deviceid, data) {
+  console.log(deviceid, data);
+  return true;
+}
 
 const callbacks = {
   setPowerState,
@@ -63,6 +114,16 @@ const callbacks = {
   setVolume,
   adjustVolume,
   setMute,
+  adjustBrightness,
+  setThermostatMode,
+  adjustRangeValue,
+  selectInput,
+  mediaControl,
+  skipChannels,
+  changeChannel,
+  setBands,
+  setMode,
+  adjustBands,
 };
 
 const sinricpro = new SinricPro(appKey, deviceId, secretKey);
@@ -70,7 +131,7 @@ const sinricpro = new SinricPro(appKey, deviceId, secretKey);
 SinricProActions(sinricpro, callbacks);
 
 setInterval(() => {
-  // raiseEvent(sinricpro, eventNames.powerState, 'deviceId', { state: 'On' });
+  // raiseEvent(sinricpro, eventNames.powerState, deviceIds.deviceId1, { state: 'On' });
   // raiseEvent(sinricpro, eventNames.setBrightness, 'deviceId', { brightness: 44 });
   // raiseEvent(sinricpro, eventNames.powerLevel, 'deviceId', { powerLevel: 44 });
   // raiseEvent(sinricpro, eventNames.color, 'DeviceId', { color: { b: 0, g: 0, r: 0 } });
