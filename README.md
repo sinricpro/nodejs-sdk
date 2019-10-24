@@ -17,8 +17,42 @@ npm install sinricpro
   * [dgram]()
 
 
+### Basic example
 
-### Add a credential file into your root folder (credential.js)
+```javascript 1.8
+const { SinricPro, SinricProActions, raiseEvent, eventNames } = require('../index'); // Use require('sinricpro'); if you are using NPM
+
+const appKey = ''; // d89f1***-****-****-****-************
+const secretKey = ''; // f44d1d31-1c19-****-****-9bc96c34b5bb-d19f42dd-****-****-****-************
+const device1 = ''; // 5d7e7d96069e275ea9******
+const device2 = ''; // 5d80ac5713fa175e99******
+const deviceId = [device1, device2].join(';');
+
+
+function setPowerState(deviceid, data) {
+  console.log(deviceid, data);
+  return true;
+}
+
+
+const callbacks = {
+  setPowerState,
+};
+
+const sinricpro = new SinricPro(appKey, deviceId, secretKey);
+
+SinricProActions(sinricpro, callbacks);
+
+setInterval(() => {
+  raiseEvent(sinricpro, eventNames.powerState, device1, { state: 'On' });
+}, 2000);
+
+// https://github.com/sinricpro/nodejs-sdk/blob/master/examples/simple-example.js
+```
+### Advanced example
+
+#### Add a credential file into your root folder (credential.js)
+
 ```javascript 1.8
     const credential = {
         appkey: '',
@@ -47,7 +81,8 @@ npm install sinricpro
     };
 ```
 
-### Example (app.js)
+#### Example (app.js)
+
 ```javascript
     const { appKey, deviceId, secretKey } = require('../credentials');
     const { SinricPro, SinricProActions, raiseEvent, eventNames, } = require('../index');
