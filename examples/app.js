@@ -3,6 +3,23 @@ const {
   SinricPro, SinricProActions, raiseEvent, eventNames,
 } = require('../index');
 
+/**
+ *  Change to below code if your are using via npm
+ *
+ * const {SinricPro, SinricProActions, raiseEvent, eventNames,} = require('../index');
+ *                                       ||
+ *                                       ||
+ *                                       ||
+ *                                       ||
+ *                                       ||
+ *                                      \  /
+ *                                       \/
+ * const { SinricPro, SinricProActions, raiseEvent, eventNames,} = require('sinricpro');
+ *
+ *
+ *
+ */
+
 function setPowerState(deviceid, data) {
   console.log(deviceid, data);
   return true;
