@@ -16,7 +16,10 @@ for (let key in deviceIds) {
   }
 }
 
-const deviceIdArr = deviceIdT.join(';');
 module.exports = {
-  appKey: credential.appkey, secretKey: credential.secretKey, deviceId: deviceIdArr, deviceId1: deviceIds.deviceId1, deviceIds,
+  appKey: credential.appkey,
+  secretKey: credential.secretKey,
+  deviceId: deviceIdT,
+  deviceId1: deviceIds.deviceId1,
+  deviceIds,
 };

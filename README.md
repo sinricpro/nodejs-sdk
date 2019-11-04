@@ -47,7 +47,7 @@ setInterval(() => {
   raiseEvent(sinricpro, eventNames.powerState, device1, { state: 'On' });
 }, 2000);
 
-// https://github.com/sinricpro/nodejs-sdk/blob/master/examples/simple-example.js
+// https://github.com/sinricpro/nodejs-sdk/blob/master/examples/simple-example/simple-example.js
 ```
 ### Advanced example
 

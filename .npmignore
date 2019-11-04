@@ -13,3 +13,4 @@ npm-debug.log
 .eslintrc.js
 credential.js
 credentials.js
+examples/
