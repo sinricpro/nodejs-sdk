@@ -26,7 +26,7 @@ const appKey = ''; // d89f1***-****-****-****-************
 const secretKey = ''; // f44d1d31-1c19-****-****-9bc96c34b5bb-d19f42dd-****-****-****-************
 const device1 = ''; // 5d7e7d96069e275ea9******
 const device2 = ''; // 5d80ac5713fa175e99******
-const deviceId = [device1, device2].join(';');
+const deviceId = [device1, device2]
 
 
 function setPowerState(deviceid, data) {
@@ -39,7 +39,7 @@ const callbacks = {
   setPowerState,
 };
 
-const sinricpro = new SinricPro(appKey, deviceId, secretKey);
+const sinricpro = new SinricPro(appKey, deviceId, secretKey, true);
 
 SinricProActions(sinricpro, callbacks);
 
@@ -75,9 +75,9 @@ setInterval(() => {
         }
     }
 
-    const deviceIdArr = deviceIdT.join(';');
+
         module.exports = {
-            appKey: credential.appkey, secretKey: credential.secretKey, deviceId: deviceIdArr,
+            appKey: credential.appkey, secretKey: credential.secretKey, deviceId: deviceIdT,
     };
 ```
 
@@ -149,7 +149,7 @@ setInterval(() => {
         setMute,
     };
 
-    const sinricpro = new SinricPro(appKey, deviceId, secretKey);
+    const sinricpro = new SinricPro(appKey, deviceId, secretKey, true);
 
     SinricProActions(sinricpro, callbacks);
 
