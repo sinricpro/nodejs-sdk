@@ -34,7 +34,7 @@ const callbacks = {
   setPowerState,
 };
 
-const sinricpro = new SinricPro(appKey, deviceId, secretKey);
+const sinricpro = new SinricPro(appKey, deviceId, secretKey, true);
 
 SinricProActions(sinricpro, callbacks);
 
