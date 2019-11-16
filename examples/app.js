@@ -1,6 +1,8 @@
-const { appKey, deviceId, secretKey, deviceIds } = require('./credentials');
 const {
-  SinricPro, SinricProActions, raiseEvent, eventNames,
+  appKey, deviceId, secretKey, deviceIds,
+} = require('./credentials');
+const {
+  SinricPro, SinricProActions, raiseEvent, eventNames, SinricProUdp,
 } = require('../index');
 
 /**
@@ -146,6 +148,9 @@ const callbacks = {
 const sinricpro = new SinricPro(appKey, deviceId, secretKey, true);
 
 SinricProActions(sinricpro, callbacks);
+
+const udp = new SinricProUdp(deviceId, secretKey);
+udp.begin(udp, callbacks);
 
 setInterval(() => {
   // raiseEvent(sinricpro, eventNames.powerState, deviceIds.deviceId1, { state: 'On' });
