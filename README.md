@@ -20,7 +20,7 @@ npm install sinricpro
 ### Basic example
 
 ```javascript 1.8
-const { SinricPro, SinricProActions, raiseEvent, eventNames } = require('../index'); // Use require('sinricpro'); if you are using NPM
+const { SinricPro, SinricProActions, raiseEvent, eventNames, SinricProUdp } = require('../index'); // Use require('sinricpro'); if you are using NPM
 
 const appKey = ''; // d89f1***-****-****-****-************
 const secretKey = ''; // f44d1d31-1c19-****-****-9bc96c34b5bb-d19f42dd-****-****-****-************
@@ -42,6 +42,8 @@ const callbacks = {
 const sinricpro = new SinricPro(appKey, deviceId, secretKey, true);
 
 SinricProActions(sinricpro, callbacks);
+const udp = new SinricProUdp(deviceId, secretKey);
+udp.begin(callbacks);
 
 setInterval(() => {
   raiseEvent(sinricpro, eventNames.powerState, device1, { state: 'On' });
@@ -85,7 +87,7 @@ setInterval(() => {
 
 ```javascript
     const { appKey, deviceId, secretKey } = require('../credentials');
-    const { SinricPro, SinricProActions, raiseEvent, eventNames, } = require('../index');
+    const { SinricPro, SinricProActions, raiseEvent, eventNames, SinricProUdp} = require('../index');
 
     function setPowerState(deviceid, data) {
         console.log(deviceid, data);
@@ -152,6 +154,8 @@ setInterval(() => {
     const sinricpro = new SinricPro(appKey, deviceId, secretKey, true);
 
     SinricProActions(sinricpro, callbacks);
+    const udp = new SinricProUdp(deviceId, secretKey);
+    udp.begin(callbacks);
 
     setInterval(() => {
       // raiseEvent(sinricpro, eventNames.powerState, 'deviceId', { state: 'On' });

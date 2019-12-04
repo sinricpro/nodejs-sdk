@@ -1,4 +1,4 @@
-const { SinricPro, SinricProActions, raiseEvent, eventNames } = require('../../index');
+const { SinricPro, SinricProActions, raiseEvent, eventNames, SinricProUdp } = require('../../index');
 
 /**
  *  Change to below code if your are using via npm
@@ -37,6 +37,9 @@ const callbacks = {
 const sinricpro = new SinricPro(appKey, deviceId, secretKey, true);
 
 SinricProActions(sinricpro, callbacks);
+const udp = new SinricProUdp(deviceId, secretKey);
+
+udp.begin(callbacks);
 
 setInterval(() => {
   raiseEvent(sinricpro, eventNames.powerState, device1, { state: 'On' });
