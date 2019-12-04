@@ -1,9 +1,8 @@
 {
   "name": "sinricpro",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "description": "Sinric Pro Nodejs SDK",
   "main": "index.js",
-  "publishConfig": { "registry": "https://npm.pkg.github.com/" },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
