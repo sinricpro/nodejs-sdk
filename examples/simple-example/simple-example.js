@@ -17,11 +17,11 @@ const { SinricPro, SinricProActions, raiseEvent, eventNames, SinricProUdp } = re
  *
  */
 
-const appKey = ''; // d89f1***-****-****-****-************
-const secretKey = ''; // f44d1d31-1c19-****-****-9bc96c34b5bb-d19f42dd-****-****-****-************
-const device1 = ''; // 5d7e7d96069e275ea9******
-const device2 = ''; // 5d80ac5713fa175e99******
-const deviceId = [device1, device2];
+const appKey = ''; // bd1bd374-5b14-44eb-aca3-1db3df20cf17
+
+bd1bd374-5b14-44eb-aca3-1db3df20cf17
+
+const device1 = ''; //5e9170a60d202b3258095fa3
 
 
 function setPowerState(deviceid, data) {
