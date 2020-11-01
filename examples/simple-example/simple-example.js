@@ -1,4 +1,6 @@
-const { SinricPro, SinricProActions, raiseEvent, eventNames, SinricProUdp } = require('../../index');
+const {
+  SinricPro, SinricProActions, raiseEvent, eventNames, SinricProUdp,
+} = require('../../index');
 
 /**
  *  Change to below code if your are using via npm
