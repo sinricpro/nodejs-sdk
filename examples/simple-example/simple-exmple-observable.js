@@ -1,6 +1,7 @@
 const {
   SinricPro, SinricProActions, raiseEvent, eventNames, SinricProUdp,
 } = require('../../index');
+const { SinricProActionsObservable } = require('../../lib/sinrcpro');
 
 /**
  *  Change to below code if your are using via npm
@@ -38,11 +39,24 @@ const callbacks = {
 
 const sinricpro = new SinricPro(appKey, deviceId, secretKey, true);
 
-SinricProActions(sinricpro, callbacks);
-const udp = new SinricProUdp(deviceId, secretKey);
+let interval = null;
 
-udp.begin(callbacks);
+// emit on connection is synched
+SinricProActionsObservable(sinricpro, callbacks).subscribe((emit) => {
+  console.log(emit);
+  const udp = new SinricProUdp(deviceId, secretKey);
 
-setInterval(() => {
-  raiseEvent(sinricpro, eventNames.powerState, device1, { state: 'On' });
-}, 2000);
+  udp.begin(callbacks);
+
+  interval = setInterval(() => {
+    raiseEvent(sinricpro, eventNames.powerState, device1, { state: 'On' });
+  }, 2000);
+}, (err) => {
+  console.error(err);
+},
+() => {
+  if (interval) {
+    clearInterval(interval);
+    console.log('Disconnected');
+  }
+});

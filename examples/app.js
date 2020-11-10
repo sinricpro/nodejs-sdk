@@ -2,7 +2,11 @@ const {
   appKey, deviceId, secretKey, deviceIds,
 } = require('./credentials');
 const {
-  SinricPro, SinricProActions, raiseEvent, eventNames, SinricProUdp,
+  SinricPro,
+  SinricProActions,
+  raiseEvent,
+  eventNames,
+  SinricProUdp,
 } = require('../index');
 
 /**
@@ -40,7 +44,6 @@ function setBrightness(deviceid, data) {
   console.log(deviceid, data);
   return true;
 }
-
 
 function adjustBrightness(deviceid, data) {
   console.log(deviceid, data);

@@ -4,7 +4,8 @@
   "description": "Sinric Pro Nodejs SDK",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint --fix ./"
   },
   "repository": {
     "type": "git",
@@ -19,6 +20,7 @@
   "dependencies": {
     "dgram": "^1.0.1",
     "process": "^0.11.10",
+    "rxjs": "^6.6.3",
     "uuid": "^3.3.3",
     "ws": "^7.1.2"
   },
@@ -27,7 +29,7 @@
     "sinric"
   ],
   "devDependencies": {
-    "eslint": "^6.4.0",
+    "eslint": "^6.8.0",
     "eslint-config-airbnb-base": "^14.0.0",
     "eslint-config-standard": "^14.1.0",
     "eslint-plugin-import": "^2.18.2",
