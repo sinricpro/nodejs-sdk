@@ -1,9 +1,8 @@
-const { SinricPro, SinricProActions, raiseEvent, eventNames, SinricProUdp } = require('sinricpro'); // Use require('sinricpro'); if you are using NPM
+const { SinricPro, SinricProActions, raiseEvent, eventNames, SinricProUdp } = require('../../index'); // Use require('sinricpro'); if you are using NPM
 
 const appKey = ''; // d89f1***-****-****-****-************
 const secretKey = ''; // f44d1d31-1c19-****-****-9bc96c34b5bb-d19f42dd-****-****-****-************
 const device1 = ''; // 5d7e7d96069e275ea9******
-const device2 = ''; // 5d80ac5713fa175e99******
 const deviceId = [device1]
 
 
