@@ -26,6 +26,7 @@ SinricProActions(sinricpro, callbacks);
 const udp = new SinricProUdp(deviceId, secretKey);
 udp.begin(callbacks);
 
+//change brighness value here
 const brightnessValue=30;
 setInterval(() => {
   setBrightness(sinricpro,device1,brightnessValue)
