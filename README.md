@@ -167,10 +167,7 @@ const callbacks = {
 };
 
 const sinricpro = new SinricPro(appKey, deviceId, secretKey, true);
-
 SinricProActions(sinricpro, callbacks);
-const udp = new SinricProUdp(deviceId, secretKey);
-udp.begin(callbacks);
 
 setInterval(() => {
   // raiseEvent(sinricpro, eventNames.powerState, 'deviceId', { state: 'On' });
