@@ -1,6 +1,6 @@
 {
   "name": "sinricpro",
-  "version": "2.2.2",
+  "version": "2.2.3",
   "description": "Sinric Pro Nodejs SDK",
   "main": "index.js",
   "scripts": {
@@ -19,10 +19,12 @@
   "homepage": "https://github.com/sinricpro/nodejs-sdk#readme",
   "dependencies": {
     "dgram": "^1.0.1",
+    "leaky-bucket": "^3.0.4",
     "process": "^0.11.10",
+    "rate-limiter-flexible": "^2.2.1",
     "rxjs": "^6.6.3",
     "uuid": "^3.3.3",
-    "ws": "^7.1.2"
+    "ws": "^7.4.2"
   },
   "keywords": [
     "sinricpro",
