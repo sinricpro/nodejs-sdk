@@ -60,6 +60,11 @@ function setThermostatMode(deviceid, data) {
   return true;
 }
 
+function targetTemperature(deviceid, data) {
+  console.log(deviceid, data);
+  return true;
+}
+
 function setRangeValue(deviceid, data) {
   console.log(deviceid, data);
   return true;
@@ -164,6 +169,7 @@ setInterval(() => {
   // raiseEvent(sinricpro, eventNames.colorTemperature, 'Deviceid', { colorTemperature: 8 });
   // raiseEvent(sinricpro, eventNames.doorBell, 'DeviceId', { state: 'pressed' });
   // raiseEvent(sinricpro, eventNames.thermostatMode, 'DeviceId', { thermostatMode: 'AUTO' });
+  // raiseEvent(sinricpro, eventNames.currentTemperature, 'DeviceId', { "humidity": 20, "temperature": 24 })
   // raiseEvent(sinricpro, eventNames.rangvalue, 'DeviceId', { rangvalue: 3 });
   // raiseEvent(sinricpro, eventNames.motion, 'DeviceId', { state: 'detected' });
   // raiseEvent(sinricpro, eventNames.contact, 'DeviceId', { state: 'closed' });
