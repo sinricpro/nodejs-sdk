@@ -12,6 +12,7 @@ npm install sinricpro
 ```
 
 ### Dependencies
+- [nodejs](https://nodejs.org/en/) v14.17.6 (LTS) or newer
 
 - [websockets](https://www.npmjs.com/package/ws)
 
