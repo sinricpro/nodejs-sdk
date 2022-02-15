@@ -1,20 +1,19 @@
-const { SinricPro, SinricProActions, raiseEvent, eventNames, SinricProUdp } = require('../../index'); // Use require('sinricpro'); if you are using NPM
+const { SinricPro, startSinricPro, raiseEvent, eventNames } = require('sinricpro'); 
 
-const appKey = ''; // d89f1***-****-****-****-************
-const secretKey = ''; // f44d1d31-1c19-****-****-9bc96c34b5bb-d19f42dd-****-****-****-************
-const device1 = ''; // 5d7e7d96069e275ea9******
-const deviceId = [device1]
-
+const APPKEY    = '';
+const APPSECRET = '';
+const light     = '';
+const deviceIds = [light]
 
 function setPowerState(deviceid, data) {
   console.log(deviceid, data);
   return true;
 }
 
-function setBrightness(sinricpro,deviceid,data){
+function setBrightness(sinricpro, deviceId, data) {
     try{
-      raiseEvent(sinricpro, eventNames.setBrightness, deviceid, { brightness: data });
-    return true;
+      raiseEvent(sinricpro, eventNames.setBrightness, deviceId, { brightness: data });
+      return true;
     }
     catch(e){
       return false;
@@ -25,14 +24,12 @@ const callbacks = {
   setPowerState,
 };
 
-const sinricpro = new SinricPro(appKey, deviceId, secretKey, true);
+const sinricpro = new SinricPro(APPKEY, deviceIds, APPSECRET, true /* restore device state */);
+startSinricPro(sinricpro, callbacks);
 
-SinricProActions(sinricpro, callbacks);
-const udp = new SinricProUdp(deviceId, secretKey);
-udp.begin(callbacks);
+// To change  brighness
+// const brightnessValue = 30;
 
-//change brighness value here
-const brightnessValue=30;
-setInterval(() => {
-  setBrightness(sinricpro,device1,brightnessValue)
-}, 2000);
+// setInterval(() => {
+//   setBrightness(sinricpro, light, brightnessValue)
+// }, 60000);
