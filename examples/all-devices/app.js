@@ -1,4 +1,5 @@
 const { SinricPro, startSinricPro, eventNames } = require('sinricpro');
+
 const appKey = "";
 const secretKey = "";
 const deviceIds = [""];
@@ -127,7 +128,7 @@ const callbacks = {
 
 const sinricpro = new SinricPro(appKey, deviceIds, secretKey, true);
 startSinricPro(sinricpro, callbacks);
- 
+
 
 // setInterval(() => {
 //   // raiseEvent(sinricpro, eventNames.powerState, deviceIds.deviceId1, { state: 'On' });

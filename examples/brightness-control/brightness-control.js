@@ -1,9 +1,11 @@
-const { SinricPro, startSinricPro, raiseEvent, eventNames } = require('sinricpro'); 
+const {
+  SinricPro, startSinricPro, raiseEvent, eventNames,
+} = require('sinricpro');
 
-const APPKEY    = '';
+const APPKEY = '';
 const APPSECRET = '';
-const light     = '';
-const deviceIds = [light]
+const light = '';
+const deviceIds = [light];
 
 function setPowerState(deviceid, data) {
   console.log(deviceid, data);
@@ -11,13 +13,12 @@ function setPowerState(deviceid, data) {
 }
 
 function setBrightness(sinricpro, deviceId, data) {
-    try{
-      raiseEvent(sinricpro, eventNames.setBrightness, deviceId, { brightness: data });
-      return true;
-    }
-    catch(e){
-      return false;
-    }
+  try {
+    raiseEvent(sinricpro, eventNames.setBrightness, deviceId, { brightness: data });
+    return true;
+  } catch (e) {
+    return false;
+  }
 }
 
 const callbacks = {

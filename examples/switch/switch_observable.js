@@ -1,11 +1,11 @@
 const { SinricPro, startSinricPro, raiseEvent, eventNames } = require('sinricpro');
 const { startSinricProObservable } = require('sinricpro');
 
-const appKey    = '';
+const appKey = '';
 const secretKey = '';
-const device1   = '';
-const device2   = '';
-const deviceId  = [device1, device2];
+const device1 = '';
+const device2 = '';
+const deviceId = [device1, device2];
 
 function setPowerState(deviceid, data) {
   console.log(deviceid, data);

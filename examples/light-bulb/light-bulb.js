@@ -1,8 +1,11 @@
-const { SinricPro, startSinricPro, raiseEvent, eventNames } = require('sinricpro'); 
-const APPKEY    = '';
+const {
+  SinricPro, startSinricPro, raiseEvent, eventNames,
+} = require('sinricpro');
+
+const APPKEY = '';
 const APPSECRET = '';
-const light     = '';
-const deviceIds = [light]
+const light = '';
+const deviceIds = [light];
 
 const setPowerState = (deviceid, data) => {
   console.log("Power state: ", deviceid, data);
@@ -37,4 +40,4 @@ const callbacks = {
 };
 
 const sinricpro = new SinricPro(APPKEY, deviceIds, APPSECRET, true);
-startSinricPro(sinricpro, callbacks); 
+startSinricPro(sinricpro, callbacks);

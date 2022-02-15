@@ -3,10 +3,6 @@
   "version": "2.3.1",
   "description": "Sinric Pro Nodejs SDK",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint --fix ./"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/sinricpro/nodejs-sdk.git"
