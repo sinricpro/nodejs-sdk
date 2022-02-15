@@ -7,7 +7,7 @@ const deviceIds  = [device1]
 const setPowerState = (deviceid, data) => {
   console.log(deviceid, data);
   return true;
-}
+};
 
 const sinricpro = new SinricPro(APPKEY, deviceIds, APPSECRET, true);
 const callbacks = { setPowerState };
