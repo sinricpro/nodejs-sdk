@@ -1,13 +1,13 @@
 {
   "name": "sinricpro",
-  "version": "2.5.1",
+  "version": "2.6.1",
   "description": "Sinric Pro Nodejs SDK",
   "main": "index.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/sinricpro/nodejs-sdk.git"
   },
-  "author": "Dhanush",
+  "author": "SinricPro",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/sinricpro/nodejs-sdk/issues"
@@ -15,7 +15,6 @@
   "homepage": "https://github.com/sinricpro/nodejs-sdk#readme",
   "dependencies": {
     "dgram": "^1.0.1",
-    "leaky-bucket": "^4.1.4",
     "process": "^0.11.10",
     "rate-limiter-flexible": "^2.3.6",
     "rxjs": "^6.6.3",
