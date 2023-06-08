@@ -33,8 +33,6 @@ const webRtcOffer = async (deviceid, format, base64Offer) => {
   const offer = Buffer.from(base64Offer, 'base64').toString();
   const answer = await mediamtx(offer);
   const answerInBase64 = Buffer.from(answer).toString('base64');
-
-  console.log(answerInBase64);
   return { success: true, answer: answerInBase64 };
 };
 
