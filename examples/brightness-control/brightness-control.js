@@ -2,7 +2,7 @@
 
 const {
   SinricPro, startSinricPro, raiseEvent, eventNames,
-} = require('../../index');
+} = require('sinricpro');
 
 const APPKEY = '';
 const APPSECRET = '';
