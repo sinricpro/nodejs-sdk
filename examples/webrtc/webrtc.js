@@ -1,5 +1,3 @@
-process.env.SR_DEBUG = 1;
-
 const {
   SinricPro, startSinricPro, raiseEvent, eventNames,
 } = require('sinricpro');
