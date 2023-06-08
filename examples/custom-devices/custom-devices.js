@@ -8,22 +8,22 @@ const device1 = "";
 
 const deviceIds = [device1];
 
-function setMode(deviceid, data, instanceId) {
+async function setMode(deviceid, data, instanceId) {
   console.log(deviceid, data, instanceId);
   return true;
 }
 
-function setRangeValue(deviceid, data, instanceId) {
+async function setRangeValue(deviceid, data, instanceId) {
   console.log(deviceid, data, instanceId);
   return true;
 }
 
-function adjustRangeValue(deviceid, data, instanceId) {
+async function adjustRangeValue(deviceid, data, instanceId) {
   console.log(deviceid, data, instanceId);
   return true;
 }
 
-function setToggleState(deviceid, data, instanceId) {
+async function setToggleState(deviceid, data, instanceId) {
   console.log(deviceid, data, instanceId);
   return true;
 }

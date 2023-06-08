@@ -1,18 +1,25 @@
+// process.env.SR_DEBUG = 1;
+
 const {
   SinricPro, startSinricPro, raiseEvent, eventNames,
-} = require('sinricpro');
+} = require('../../index');
 
 const APPKEY = '';
 const APPSECRET = '';
 const light = '';
 const deviceIds = [light];
 
-function setPowerState(deviceid, data) {
+const setPowerState = async (deviceid, data) => {
   console.log(deviceid, data);
   return true;
-}
+};
 
-function setBrightness(sinricpro, deviceId, data) {
+const setBrightness = async (deviceid, data) => {
+  console.log("Brightness: ", deviceid, data);
+  return true;
+};
+
+function sendBrightness(sinricpro, deviceId, data) {
   try {
     raiseEvent(sinricpro, eventNames.setBrightness, deviceId, { brightness: data });
     return true;
@@ -23,6 +30,7 @@ function setBrightness(sinricpro, deviceId, data) {
 
 const callbacks = {
   setPowerState,
+  setBrightness,
 };
 
 const sinricpro = new SinricPro(APPKEY, deviceIds, APPSECRET, true /* restore device state */);
@@ -32,5 +40,5 @@ startSinricPro(sinricpro, callbacks);
 // const brightnessValue = 30;
 
 // setInterval(() => {
-//   setBrightness(sinricpro, light, brightnessValue)
+//   sendBrightness(sinricpro, light, brightnessValue)
 // }, 60000);

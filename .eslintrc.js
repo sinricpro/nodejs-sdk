@@ -6,5 +6,6 @@ module.exports = {
     "prefer-const": "off",
     "no-underscore-dangle": "off",
     quotes: "off",
+    "linebreak-style": 0,
   },
 };

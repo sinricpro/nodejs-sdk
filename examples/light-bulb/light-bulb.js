@@ -7,22 +7,22 @@ const APPSECRET = '';
 const light = '';
 const deviceIds = [light];
 
-const setPowerState = (deviceid, data) => {
+const setPowerState = async (deviceid, data) => {
   console.log("Power state: ", deviceid, data);
   return true;
 };
 
-const setColorTemperature = (deviceid, data) => {
+const setColorTemperature = async (deviceid, data) => {
   console.log("Color temperature: ", deviceid, data);
   return true;
 };
 
-const setColor = (deviceid, data) => {
+const setColor = async (deviceid, data) => {
   console.log("Color: ", deviceid, data);
   return true;
 };
 
-const setBrightness = (deviceid, data) => {
+const setBrightness = async (deviceid, data) => {
   console.log("Brightness: ", deviceid, data);
   return true;
 };
