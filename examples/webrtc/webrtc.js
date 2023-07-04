@@ -12,7 +12,10 @@ const device1 = '';
 const deviceIds = [device1];
 
 async function mediamtx(offer) {
-  const url = `http://<hostname>:8889/<name>/whep`; // Format : `http://<hostname>:8889/<name>/whep`
+  /* 
+    Get the answer from mediamtx `http://<hostname>:8889/<name>/whep`. eg: http://pi3:8889/cam/whep
+  */
+  const url = `http://<hostname>:8889/<name>/whep`; 
   const response = await fetch(url, {
     headers: {
       "content-type": "application/sdp",
