@@ -12,35 +12,45 @@ const device1 = '';
 const deviceIds = [device1];
 
 async function mediamtx(offer) {
-  const url = `http://pi3:8889/cam/whep`; // Format : `http://<hostname>:8889/<name>/whep`
+  const url = `http://<hostname>:8889/<name>/whep`; // Format : `http://<hostname>:8889/<name>/whep`
+  const response = await fetch(url, {
+    headers: {
+      "content-type": "application/sdp",
+    },
+    body: offer,
+    method: "POST",
+  });
 
-  try {
-    const response = await fetch(url, {
-      headers: {
-        "content-type": "application/sdp",
-      },
-      body: offer,
-      method: "POST",
-    });
-
-    // eslint-disable-next-line no-return-await
-    return await response.text();
-  } catch (err) {
-    console.log(err);
-    throw err;
-  }
+  // eslint-disable-next-line no-return-await
+  return await response.text();   
 }
 
-const webRtcOffer = async (deviceid, format, base64Offer) => {
+const getWebRTCAnswer = async (deviceid, base64Offer) => {
+  // Alexa Eco needs camera stream answer
   const offer = Buffer.from(base64Offer, 'base64').toString();
-  const answer = await mediamtx(offer);
-  const answerInBase64 = Buffer.from(answer).toString('base64');
-
-  console.log(answerInBase64);
-  return { success: true, answer: answerInBase64 };
+  try {
+    const answer = await mediamtx(offer);
+    const answerInBase64 = Buffer.from(answer).toString('base64');
+    return { success: true, answer: answerInBase64 };
+  } catch (error) {
+    console.error(error);
+    return { success: false };
+  }  
+};
+ 
+  
+const getCameraStreamUrl = async (deviceid, cameraStreamProtocol) => {
+  if(cameraStreamProtocol === 'hls') {
+    return { success: true, url: 'https://cph-p2p-msl.akamaized.net/hls/live/2000341/test/master.m3u8' };
+  } 
+  else if(cameraStreamProtocol === 'rtsp') {
+    return { success: true, url: 'rtsp://rtspurl:443' };
+  } else {
+    return { success: false};
+  }
 };
 
 const sinricpro = new SinricPro(APPKEY, deviceIds, APPSECRET, false);
-const callbacks = { webRtcOffer };
+const callbacks = { getWebRTCAnswer, getCameraStreamUrl };
 
 startSinricPro(sinricpro, callbacks);

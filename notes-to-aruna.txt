@@ -1,0 +1,6 @@
+Switch to Login module (by typing "how-to-npm" on command line)
+Type "npm adduser" to login
+Type "npm whoami" to confirm if logged in
+Switch back to the package at which you are getting error(my case it was Publish Again)
+Type "npm publish"
+Done

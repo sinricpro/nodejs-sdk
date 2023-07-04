@@ -7,5 +7,6 @@ module.exports = {
     "no-underscore-dangle": "off",
     quotes: "off",
     "linebreak-style": 0,
+    printWidth: 120,
   },
 };
