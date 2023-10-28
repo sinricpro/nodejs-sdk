@@ -148,7 +148,8 @@ startSinricPro(sinricpro, callbacks);
 //   // raiseEvent(sinricpro, eventNames.mode, 'DeviceId', { mode: 'MOVIE' });
 //   // raiseEvent(sinricpro, eventNames.lock, 'DeviceId', { state: 'LOCKED' });
 //   // raiseEvent(sinricpro, eventNames.mute, 'DeviceId', { mute: true });
-//   // raiseEvent(sinricpro, eventNames.pushNotification, device1, { alert: "Hello there" });
+//   // raiseEvent(sinricpro, eventNames.pushNotification, 'DeviceId', { alert: "Hello there" });
+//   // raiseEvent(sinricpro, eventNames.currentTemperature, 'DeviceId', { "humidity": 75.3, "temperature": 24});
 // }, 60000);
 
 // Take a look at example messages for data format https://github.com/sinricpro/sample_messages
