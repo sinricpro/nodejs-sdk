@@ -1,8 +1,12 @@
+//process.env.SR_DEBUG = '1'; // Enable debug logs
+
 const { SinricPro, startSinricPro, eventNames, raiseEvent } = require('sinricpro');
 
 const appKey = "";
 const secretKey = "";
 const deviceIds = [""];
+
+let globalTemperature = 0;
 
 function setPowerState(deviceid, data) {
   console.log("Power state: ", deviceid, data);
@@ -16,13 +20,23 @@ function setThermostatMode(deviceid, data) {
 
 function targetTemperature(deviceid, temperature) {
     console.log("Target temperature: ", deviceid, temperature); 
+    globalTemperature = temperature;
     return true;
+}
+
+function adjustTargetTemperature(deviceid, temperatureDelta) {
+  console.log("Adjust target temperature by ", temperatureDelta); 
+  console.log("Current temperature is: ", globalTemperature);
+  globalTemperature += temperatureDelta;  // calculate absolut temperature
+  console.log("New temperature is: ", globalTemperature);
+  return { success: true, temperature: globalTemperature };
 }
 
 const callbacks = {
   setPowerState,
   targetTemperature,
   setThermostatMode,
+  adjustTargetTemperature
 };
 
 const sinricpro = new SinricPro(appKey, deviceIds, secretKey, true);
