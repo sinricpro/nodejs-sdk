@@ -9,3 +9,16 @@
 
 ### Features
 * **Push notification feature added**
+
+## [2.8.1]
+* feat: Camera support.
+
+## [2.9.1]
+
+### Features
+* fix: setThermostatMode
+
+## [2.10.1]
+
+### Features
+* fix: adjustTargetTemperature
