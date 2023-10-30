@@ -32,3 +32,8 @@
 
 ### Features
 * fix: adjustTargetTemperature response format.
+
+## [2.11.4]
+
+### Features
+* fix: power on, off event
