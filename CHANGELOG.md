@@ -22,3 +22,8 @@
 
 ### Features
 * fix: adjustTargetTemperature
+
+## [2.11.1]
+
+### Features
+* fix: targetTemperature
