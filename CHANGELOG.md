@@ -27,3 +27,8 @@
 
 ### Features
 * fix: targetTemperature
+
+## [2.11.2]
+
+### Features
+* fix: adjustTargetTemperature response format.
