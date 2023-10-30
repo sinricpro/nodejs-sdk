@@ -43,7 +43,9 @@ const sinricpro = new SinricPro(appKey, deviceIds, secretKey, true);
 startSinricPro(sinricpro, callbacks);
 
 //  setInterval(() => {
-//     // raiseEvent(sinricpro, eventNames.targetTemperature, "deviceId", { temperature: Math.floor(Math.random() * 60) });
-//     // raiseEvent(sinricpro, eventNames.thermostatMode, "deviceId", { thermostatMode: 'AUTO' });
-//     // raiseEvent(sinricpro, eventNames.currentTemperature, "deviceId", { "humidity": 75.3, "temperature": 24});
+//     //raiseEvent(sinricpro, eventNames.powerState, "deviceid", { state: 'On' });
+//     //raiseEvent(sinricpro, eventNames.targetTemperature, "deviceid", { temperature: Math.floor(Math.random() * 60) });
+//     //raiseEvent(sinricpro, eventNames.thermostatMode, "deviceid", { thermostatMode: 'AUTO' });
+//     //raiseEvent(sinricpro, eventNames.currentTemperature, "deviceid", { "humidity": 75.3, "temperature": 24});
 //  }, 15000);
+ 
