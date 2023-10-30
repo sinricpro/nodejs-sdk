@@ -1,6 +1,6 @@
 {
   "name": "sinricpro",
-  "version": "2.10.1",
+  "version": "2.11.1",
   "description": "Sinric Pro Nodejs SDK",
   "main": "index.js",
   "repository": {
