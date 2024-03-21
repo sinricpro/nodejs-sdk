@@ -32,11 +32,21 @@ function adjustTargetTemperature(deviceid, temperatureDelta) {
   return { success: true, temperature: globalTemperature };
 }
 
+const onDisconnect = () => {
+  console.log("Connection closed");
+}
+
+const onConnected = () => {
+  console.log("Connected to Sinric Pro");
+}
+
 const callbacks = {
   setPowerState,
   targetTemperature,
   setThermostatMode,
-  adjustTargetTemperature
+  adjustTargetTemperature,
+  onDisconnect,
+  onConnected,
 };
 
 const sinricpro = new SinricPro(appKey, deviceIds, secretKey, true);

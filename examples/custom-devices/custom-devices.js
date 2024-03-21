@@ -28,11 +28,21 @@ async function setToggleState(deviceid, data, instanceId) {
   return true;
 }
 
+const onDisconnect = () => {
+  console.log("Connection closed");
+}
+
+const onConnected = () => {
+  console.log("Connected to Sinric Pro");
+}
+
 const callbacks = {
   adjustRangeValue,
   setMode,
   setRangeValue,
   setToggleState,
+  onDisconnect,
+  onConnected,
 };
 
 const sinricpro = new SinricPro(APPKEY, deviceIds, APPSECRET, true);

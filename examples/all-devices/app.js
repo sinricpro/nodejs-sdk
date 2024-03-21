@@ -103,6 +103,14 @@ function setLockState(deviceid, data) {
   return true;
 }
 
+const onDisconnect = () => {
+  console.log("Connection closed");
+}
+
+const onConnected = () => {
+  console.log("Connected to Sinric Pro");
+}
+
 const callbacks = {
   setPowerState,
   setPowerLevel,
@@ -124,6 +132,8 @@ const callbacks = {
   setBands,
   setMode,
   adjustBands,
+  onDisconnect,
+  onConnected,
 };
 
 const sinricpro = new SinricPro(appKey, deviceIds, secretKey, true);

@@ -29,14 +29,18 @@ const setBrightness = async (deviceid, data) => {
 
 const onDisconnect = () => {
   console.log("Connection closed");
-};
+}
 
+const onConnected = () => {
+  console.log("Connected to Sinric Pro");
+}
 const callbacks = {
   setPowerState,
   setColorTemperature,
   setBrightness,
-  onDisconnect,
   setColor,
+  onDisconnect,
+  onConnected,
 };
 
 const sinricpro = new SinricPro(APPKEY, deviceIds, APPSECRET, true);
