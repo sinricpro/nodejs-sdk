@@ -37,3 +37,9 @@
 
 ### Features
 * fix: power on, off event
+
+## [2.12.1]
+
+### Features
+* fix: error message when sending an event while connection not established yet
+* feat: add onConnected callback
