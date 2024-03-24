@@ -58,7 +58,15 @@ const setPowerState = async (deviceid, data) => {
   return true;
 };
 
+const onDisconnect = () => {
+  console.log("Connection closed");
+}
+
+const onConnected = () => {
+  console.log("Connected to Sinric Pro");
+}
+
 const sinricpro = new SinricPro(APPKEY, deviceIds, APPSECRET, false);
-const callbacks = { setPowerState, getWebRTCAnswer, getCameraStreamUrl };
+const callbacks = { setPowerState, getWebRTCAnswer, getCameraStreamUrl, onDisconnect, onConnected };
 
 startSinricPro(sinricpro, callbacks);
