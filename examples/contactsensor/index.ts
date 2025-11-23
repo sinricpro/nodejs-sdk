@@ -8,9 +8,9 @@
  * - Simulating door/window state changes
  */
 
-import SinricPro from 'sinricpro-sdk';
-import { SinricProContactSensor } from 'sinricpro-sdk';
-import { SinricProSdkLogger, LogLevel } from 'sinricpro-sdk';
+import SinricPro from 'sinricpro';
+import { SinricProContactSensor } from 'sinricpro';
+import { SinricProSdkLogger, LogLevel } from 'sinricpro';
 
 const DEVICE_ID = 'YOUR-DEVICE-ID'; // 24-character hex
 const APP_KEY = 'YOUR-APP-KEY'; // UUID format

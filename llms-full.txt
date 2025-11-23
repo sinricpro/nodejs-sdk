@@ -1,7 +1,7 @@
 # SinricPro Node.js/TypeScript SDK - Complete LLM Context
 
 > Official SDK for SinricPro IoT platform. Control smart home devices with Alexa and Google Home.
-> npm: sinricpro-sdk | Version: 3.0.0 | License: CC-BY-SA-4.0
+> npm: sinricpro | Version: 3.0.0 | License: CC-BY-SA-4.0
 > Repository: https://github.com/sinricpro/nodejs-sdk
 
 ## Table of Contents
@@ -116,15 +116,15 @@ sinricpro-nodejs-sdk/
 ### Installation
 
 ```bash
-npm install sinricpro-sdk
+npm install sinricpro
 ```
 
 ### Basic Setup
 
 ```typescript
-import SinricPro from 'sinricpro-sdk';
-import { SinricProSwitch } from 'sinricpro-sdk';
-import { SinricProSdkLogger, LogLevel } from 'sinricpro-sdk';
+import SinricPro from 'sinricpro';
+import { SinricProSwitch } from 'sinricpro';
+import { SinricProSdkLogger, LogLevel } from 'sinricpro';
 
 // Optional: Set log level
 SinricProSdkLogger.setLevel(LogLevel.DEBUG); // DEBUG, INFO, WARN, ERROR, NONE
@@ -212,9 +212,9 @@ class SinricPro {
 }
 
 // Access singleton
-import SinricPro from 'sinricpro-sdk';
+import SinricPro from 'sinricpro';
 // or
-import { SinricPro } from 'sinricpro-sdk';
+import { SinricPro } from 'sinricpro';
 const instance = SinricPro.getInstance();
 ```
 
@@ -290,7 +290,7 @@ Basic on/off switch.
 **Capabilities:** PowerStateController
 
 ```typescript
-import { SinricProSwitch } from 'sinricpro-sdk';
+import { SinricProSwitch } from 'sinricpro';
 
 const mySwitch = SinricProSwitch(DEVICE_ID);
 
@@ -310,7 +310,7 @@ Dimmable switch with brightness control.
 **Capabilities:** PowerStateController, PowerLevelController
 
 ```typescript
-import { SinricProDimSwitch } from 'sinricpro-sdk';
+import { SinricProDimSwitch } from 'sinricpro';
 
 const myDimSwitch = SinricProDimSwitch(DEVICE_ID);
 
@@ -332,7 +332,7 @@ Full-featured smart light with color and temperature.
 **Capabilities:** PowerStateController, BrightnessController, ColorController, ColorTemperatureController
 
 ```typescript
-import { SinricProLight } from 'sinricpro-sdk';
+import { SinricProLight } from 'sinricpro';
 
 const myLight = SinricProLight(DEVICE_ID);
 
@@ -355,7 +355,7 @@ Smart lock with lock/unlock control.
 **Capabilities:** LockController
 
 ```typescript
-import { SinricProLock } from 'sinricpro-sdk';
+import { SinricProLock } from 'sinricpro';
 
 const myLock = SinricProLock(DEVICE_ID);
 
@@ -374,7 +374,7 @@ Window blinds/curtains with position control.
 **Capabilities:** PowerStateController, OpenCloseController
 
 ```typescript
-import { SinricProBlinds } from 'sinricpro-sdk';
+import { SinricProBlinds } from 'sinricpro';
 
 const myBlinds = SinricProBlinds(DEVICE_ID);
 
@@ -397,7 +397,7 @@ Garage door opener (uses ModeController).
 **Important:** GarageDoor now uses ModeController with modes "OPEN" and "CLOSED"
 
 ```typescript
-import { SinricProGarageDoor } from 'sinricpro-sdk';
+import { SinricProGarageDoor } from 'sinricpro';
 
 const myGarageDoor = SinricProGarageDoor(DEVICE_ID);
 
@@ -421,7 +421,7 @@ Full thermostat with temperature control and modes.
 **Capabilities:** PowerStateController, ThermostatController, TemperatureSensor
 
 ```typescript
-import { SinricProThermostat } from 'sinricpro-sdk';
+import { SinricProThermostat } from 'sinricpro';
 
 const myThermostat = SinricProThermostat(DEVICE_ID);
 
@@ -450,7 +450,7 @@ Window air conditioner unit.
 **Capabilities:** PowerStateController, ThermostatController, TemperatureSensor, RangeController, SettingController, PushNotification
 
 ```typescript
-import { SinricProWindowAC } from 'sinricpro-sdk';
+import { SinricProWindowAC } from 'sinricpro';
 
 const myAC = SinricProWindowAC(DEVICE_ID);
 
@@ -475,7 +475,7 @@ Smart fan with speed control.
 **Capabilities:** PowerStateController, RangeController
 
 ```typescript
-import { SinricProFan } from 'sinricpro-sdk';
+import { SinricProFan } from 'sinricpro';
 
 const myFan = SinricProFan(DEVICE_ID);
 
@@ -504,7 +504,7 @@ Smart TV with full control.
 **Capabilities:** PowerStateController, VolumeController, MuteController, ChannelController, InputController, MediaController
 
 ```typescript
-import { SinricProTV } from 'sinricpro-sdk';
+import { SinricProTV } from 'sinricpro';
 
 const myTV = SinricProTV(DEVICE_ID);
 
@@ -539,7 +539,7 @@ Smart speaker with equalizer and modes.
 **Capabilities:** PowerStateController, VolumeController, MuteController, MediaController, EqualizerController, ModeController, SettingController, PushNotification
 
 ```typescript
-import { SinricProSpeaker } from 'sinricpro-sdk';
+import { SinricProSpeaker } from 'sinricpro';
 
 const mySpeaker = SinricProSpeaker(DEVICE_ID);
 
@@ -577,7 +577,7 @@ Security camera.
 **Capabilities:** PowerStateController, CameraController
 
 ```typescript
-import { SinricProCamera } from 'sinricpro-sdk';
+import { SinricProCamera } from 'sinricpro';
 
 const myCamera = SinricProCamera(DEVICE_ID);
 
@@ -593,7 +593,7 @@ Smart doorbell.
 **Capabilities:** Doorbell, PushNotification
 
 ```typescript
-import { SinricProDoorbell } from 'sinricpro-sdk';
+import { SinricProDoorbell } from 'sinricpro';
 
 const myDoorbell = SinricProDoorbell(DEVICE_ID);
 
@@ -609,7 +609,7 @@ Motion detection sensor.
 **Capabilities:** MotionSensor
 
 ```typescript
-import { SinricProMotionSensor } from 'sinricpro-sdk';
+import { SinricProMotionSensor } from 'sinricpro';
 
 const sensor = SinricProMotionSensor(DEVICE_ID);
 
@@ -624,7 +624,7 @@ Door/window contact sensor.
 **Capabilities:** ContactSensor
 
 ```typescript
-import { SinricProContactSensor } from 'sinricpro-sdk';
+import { SinricProContactSensor } from 'sinricpro';
 
 const sensor = SinricProContactSensor(DEVICE_ID);
 
@@ -639,7 +639,7 @@ Temperature and humidity sensor.
 **Capabilities:** TemperatureSensor
 
 ```typescript
-import { SinricProTemperatureSensor } from 'sinricpro-sdk';
+import { SinricProTemperatureSensor } from 'sinricpro';
 
 const sensor = SinricProTemperatureSensor(DEVICE_ID);
 
@@ -653,7 +653,7 @@ Air quality monitoring sensor.
 **Capabilities:** AirQualitySensor, TemperatureSensor
 
 ```typescript
-import { SinricProAirQualitySensor } from 'sinricpro-sdk';
+import { SinricProAirQualitySensor } from 'sinricpro';
 
 const sensor = SinricProAirQualitySensor(DEVICE_ID);
 
@@ -674,7 +674,7 @@ Power consumption monitoring.
 **Capabilities:** PowerSensor
 
 ```typescript
-import { SinricProPowerSensor } from 'sinricpro-sdk';
+import { SinricProPowerSensor } from 'sinricpro';
 
 const sensor = SinricProPowerSensor(DEVICE_ID);
 
@@ -1096,8 +1096,8 @@ const EVENT_LIMIT_SENSOR_VALUE = 60000; // 60 seconds
 ### Multi-Device Example
 
 ```typescript
-import SinricPro from 'sinricpro-sdk';
-import { SinricProSwitch, SinricProLight, SinricProThermostat } from 'sinricpro-sdk';
+import SinricPro from 'sinricpro';
+import { SinricProSwitch, SinricProLight, SinricProThermostat } from 'sinricpro';
 
 // Create multiple devices
 const livingRoomLight = SinricProLight('device-id-1');
@@ -1230,9 +1230,9 @@ SinricPro.onPong((latency) => {
 To create a custom device, compose existing capabilities:
 
 ```typescript
-import { SinricProDevice } from 'sinricpro-sdk';
-import { PowerStateController, IPowerStateController } from 'sinricpro-sdk';
-import { BrightnessController, IBrightnessController } from 'sinricpro-sdk';
+import { SinricProDevice } from 'sinricpro';
+import { PowerStateController, IPowerStateController } from 'sinricpro';
+import { BrightnessController, IBrightnessController } from 'sinricpro';
 
 // Internal class with mixins
 class MyCustomDeviceClass extends BrightnessController(
@@ -1326,14 +1326,14 @@ Rate limiting is automatic via `EventLimiter` class.
 
 #### 2. Import Errors
 
-**Error:** Cannot find module 'sinricpro-sdk'
+**Error:** Cannot find module 'sinricpro'
 
 **Solution:** Use correct import paths:
 
 ```typescript
 // ✅ Correct
-import SinricPro from 'sinricpro-sdk';
-import { SinricProSwitch } from 'sinricpro-sdk';
+import SinricPro from 'sinricpro';
+import { SinricProSwitch } from 'sinricpro';
 
 // ❌ Wrong
 import SinricPro from '../../src/core/SinricPro';
@@ -1397,7 +1397,7 @@ myGarageDoor.onSetMode(async (deviceId, mode) => {
 Enable debug logging to troubleshoot:
 
 ```typescript
-import { SinricProSdkLogger, LogLevel } from 'sinricpro-sdk';
+import { SinricProSdkLogger, LogLevel } from 'sinricpro';
 
 // Set log level before anything else
 SinricProSdkLogger.setLevel(LogLevel.DEBUG);
@@ -1480,7 +1480,7 @@ npm run example:speaker
 
 ```json
 {
-  "name": "sinricpro-sdk",
+  "name": "sinricpro",
   "version": "3.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -1519,13 +1519,13 @@ await SinricPro.begin({
 
 ```typescript
 // ❌ Version 2.x
-import { SinricProGarageDoor } from 'sinricpro-sdk';
+import { SinricProGarageDoor } from 'sinricpro';
 const door = SinricProGarageDoor(DEVICE_ID);
 door.onDoorState(async (id, state) => { ... });
 await door.sendDoorStateEvent('OPEN');
 
 // ✅ Version 3.0.0
-import { SinricProGarageDoor } from 'sinricpro-sdk';
+import { SinricProGarageDoor } from 'sinricpro';
 const door = SinricProGarageDoor(DEVICE_ID);
 door.onSetMode(async (id, mode) => { ... });
 await door.sendModeEvent('OPEN');
@@ -1540,7 +1540,7 @@ Examples now use npm-style imports:
 import SinricPro from '../../src/core/SinricPro';
 
 // ✅ NPM package imports
-import SinricPro from 'sinricpro-sdk';
+import SinricPro from 'sinricpro';
 ```
 
 ---
@@ -1550,13 +1550,13 @@ import SinricPro from 'sinricpro-sdk';
 Here's a comprehensive example showing best practices:
 
 ```typescript
-import SinricPro from 'sinricpro-sdk';
+import SinricPro from 'sinricpro';
 import {
   SinricProSwitch,
   SinricProLight,
   SinricProThermostat
-} from 'sinricpro-sdk';
-import { SinricProSdkLogger, LogLevel } from 'sinricpro-sdk';
+} from 'sinricpro';
+import { SinricProSdkLogger, LogLevel } from 'sinricpro';
 
 // Enable debug logging
 SinricProSdkLogger.setLevel(LogLevel.DEBUG);

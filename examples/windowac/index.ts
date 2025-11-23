@@ -8,9 +8,9 @@
  * - Temperature sensor reporting
  */
 
-import SinricPro from 'sinricpro-sdk';
-import { SinricProWindowAC } from 'sinricpro-sdk';
-import { SinricProSdkLogger, LogLevel } from 'sinricpro-sdk';
+import SinricPro from 'sinricpro';
+import { SinricProWindowAC } from 'sinricpro';
+import { SinricProSdkLogger, LogLevel } from 'sinricpro';
 
 // Configuration - Replace with your credentials
 const DEVICE_ID = 'YOUR-DEVICE-ID'; // 24-character hex

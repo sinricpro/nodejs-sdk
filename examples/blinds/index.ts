@@ -8,9 +8,9 @@
  * - Sending position change events
  */
 
-import SinricPro from 'sinricpro-sdk';
-import { SinricProBlinds } from 'sinricpro-sdk';
-import { SinricProSdkLogger, LogLevel } from 'sinricpro-sdk';
+import SinricPro from 'sinricpro';
+import { SinricProBlinds } from 'sinricpro';
+import { SinricProSdkLogger, LogLevel } from 'sinricpro';
 
 const DEVICE_ID = 'YOUR-DEVICE-ID'; // 24-character hex
 const APP_KEY = 'YOUR-APP-KEY'; // UUID format

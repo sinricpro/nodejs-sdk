@@ -1,7 +1,7 @@
 # SinricPro Node.js/TypeScript SDK - LLM Context (Summary)
 
 > Official SDK for SinricPro IoT platform. Control smart home devices with Alexa and Google Home.
-> npm: sinricpro-sdk | Version: 3.0.0 | License: CC-BY-SA-4.0
+> npm: sinricpro | Version: 3.0.0 | License: CC-BY-SA-4.0
 
 ## Architecture
 
@@ -18,9 +18,9 @@ type SinricProSwitch = SinricProDevice & IPowerStateController;
 ## Quick Start
 
 ```typescript
-import SinricPro from 'sinricpro-sdk';
-import { SinricProSwitch } from 'sinricpro-sdk';
-import { SinricProSdkLogger, LogLevel } from 'sinricpro-sdk';
+import SinricPro from 'sinricpro';
+import { SinricProSwitch } from 'sinricpro';
+import { SinricProSdkLogger, LogLevel } from 'sinricpro';
 
 const DEVICE_ID = 'YOUR-DEVICE-ID'; // 24-char hex
 const APP_KEY = 'YOUR-APP-KEY';     // UUID format
@@ -180,7 +180,7 @@ examples/             # 16 working examples
 ## Main Exports
 
 ```typescript
-// From 'sinricpro-sdk'
+// From 'sinricpro'
 export { SinricPro };           // Singleton class
 export default SinricPro;       // Default export
 
@@ -226,7 +226,7 @@ npm run example:thermostat
 
 1. **Type errors in mixins** - Use `as any` with eslint-disable comments
 2. **Abstract class errors** - Cast SinricProDevice to `any` in mixin chain
-3. **Import errors** - Use 'sinricpro-sdk', not relative paths
+3. **Import errors** - Use 'sinricpro', not relative paths
 4. **Credentials format** - deviceId: 24 hex chars, appKey: UUID format
 
 ---

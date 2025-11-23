@@ -7,9 +7,9 @@
  * - Multiple capability callbacks
  */
 
-import SinricPro from 'sinricpro-sdk';
-import { SinricProLight } from 'sinricpro-sdk';
-import { SinricProSdkLogger, LogLevel } from 'sinricpro-sdk';
+import SinricPro from 'sinricpro';
+import { SinricProLight } from 'sinricpro';
+import { SinricProSdkLogger, LogLevel } from 'sinricpro';
 
 // Configuration - Replace with your credentials
 const DEVICE_ID = 'YOUR-DEVICE-ID'; // 24-character hex

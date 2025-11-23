@@ -8,9 +8,9 @@
  * - Sending power state and brightness events
  */
 
-import SinricPro from 'sinricpro-sdk';
-import { SinricProDimSwitch } from 'sinricpro-sdk';
-import { SinricProSdkLogger, LogLevel } from 'sinricpro-sdk';
+import SinricPro from 'sinricpro';
+import { SinricProDimSwitch } from 'sinricpro';
+import { SinricProSdkLogger, LogLevel } from 'sinricpro';
 
 const DEVICE_ID = 'YOUR-DEVICE-ID'; // 24-character hex
 const APP_KEY = 'YOUR-APP-KEY'; // UUID format
