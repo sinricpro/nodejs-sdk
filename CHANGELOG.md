@@ -1,3 +1,9 @@
+## [3.0.0]
+
+### Features
+
+* feat: Replaced the old sdk with a new sdk
+
 ## [2.6.1]
 
 ### Features

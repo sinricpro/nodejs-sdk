@@ -1,17 +1,31 @@
-.*.swp
-._*
-.DS_Store
-.git
-.hg
-.npmrc
-.lock-wscript
-.svn
-.wafpickle-*
-config.gypi
-CVS
-npm-debug.log
-.eslintrc.js
-credential.js
-credentials.js
+# Source files
+src/
+test/
 examples/
-sinricproudp2.js
+
+# Configuration files
+.vscode/
+.github/
+tsconfig.json
+.eslintrc.json
+.prettierrc.json
+jest.config.js
+
+# Documentation (keep README.md and LICENSE)
+CLAUDE.md
+llms.txt
+llms-full.txt
+
+# Development files
+*.log
+*.tgz
+.DS_Store
+.env
+.env.local
+
+# Node modules
+node_modules/
+
+# Coverage
+coverage/
+*.lcov
