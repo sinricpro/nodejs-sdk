@@ -33,7 +33,7 @@ describe('SinricPro Connection (Integration)', () => {
     it('should handle device addition', async () => {
       await SinricPro.begin(config);
 
-      const device = SinricPro.add(SinricProSwitch, config.deviceId);
+      const device = SinricPro.add(SinricProSwitch(config.deviceId));
 
       expect(device).toBeDefined();
       expect(device.getDeviceId()).toBe(config.deviceId);

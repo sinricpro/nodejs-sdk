@@ -45,9 +45,25 @@ describe('EventLimiter', () => {
       // Wait for original minimum distance
       await new Promise((resolve) => setTimeout(resolve, 110));
 
-      // Should still be limited due to extra delay
+      // First event after waiting is allowed (but sets extra delay)
+      const isAllowed = limiter.isLimited();
+      expect(isAllowed).toBe(false);
+
+      // Immediately after, should be limited due to extra delay
       const isLimited = limiter.isLimited();
       expect(isLimited).toBe(true);
+
+      // Should still be limited after waiting just the minimum distance (100ms)
+      // Extra delay is 100ms, so total delay needed is 200ms
+      // Wait only 95ms to stay well within the limit
+      await new Promise((resolve) => setTimeout(resolve, 95));
+      const stillLimited = limiter.isLimited();
+      expect(stillLimited).toBe(true);
+
+      // After waiting the full extra distance (total > 200ms), should be allowed
+      await new Promise((resolve) => setTimeout(resolve, 120));
+      const nowAllowed = limiter.isLimited();
+      expect(nowAllowed).toBe(false);
     });
   });
 

@@ -7,7 +7,8 @@ import { PowerStateController } from '../../src/capabilities/PowerStateControlle
 import type { SinricProRequest } from '../../src/core/types';
 
 // Create test device class
-class TestSwitch extends PowerStateController(SinricProDevice) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+class TestSwitch extends PowerStateController(SinricProDevice as any) {
   constructor(deviceId: string) {
     super(deviceId, 'TEST_SWITCH');
   }
@@ -24,7 +25,7 @@ describe('PowerStateController', () => {
     it('should handle setPowerState request with On', async () => {
       let receivedState = false;
 
-      device.onPowerState((deviceId, state) => {
+      device.onPowerState((deviceId: string, state: boolean) => {
         expect(deviceId).toBe('test-device-123');
         receivedState = state;
         return true;
@@ -47,7 +48,7 @@ describe('PowerStateController', () => {
     it('should handle setPowerState request with Off', async () => {
       let receivedState = true;
 
-      device.onPowerState((deviceId, state) => {
+      device.onPowerState((_deviceId: string, state: boolean) => {
         receivedState = state;
         return true;
       });
@@ -95,7 +96,7 @@ describe('PowerStateController', () => {
     });
 
     it('should handle async callbacks', async () => {
-      device.onPowerState(async (deviceId, state) => {
+      device.onPowerState(async (_deviceId: string, _state: boolean) => {
         await new Promise((resolve) => setTimeout(resolve, 10));
         return true;
       });
