@@ -43,10 +43,7 @@ jobs:
       - name: Check examples compile (TypeScript check)
         run: |
           echo "Checking examples can be compiled..."
-          for example in examples/*/index.ts; do
-            echo "Checking $example..."
-            npx tsc --noEmit --skipLibCheck $example
-          done
+          cd examples && npx tsc --noEmit
 
   build-status:
     name: Build Status Summary
