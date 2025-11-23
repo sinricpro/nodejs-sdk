@@ -1,0 +1,1740 @@
+# SinricPro Node.js/TypeScript SDK - Complete LLM Context
+
+> Official SDK for SinricPro IoT platform. Control smart home devices with Alexa and Google Home.
+> npm: sinricpro-sdk | Version: 3.0.0 | License: CC-BY-SA-4.0
+> Repository: https://github.com/sinricpro/nodejs-sdk
+
+## Table of Contents
+
+1. Architecture & Design Patterns
+2. Installation & Setup
+3. Core API Reference
+4. Device Reference (18 devices)
+5. Capability Reference (30 capabilities)
+6. Type Definitions
+7. Examples & Usage Patterns
+8. Advanced Topics
+9. Troubleshooting
+
+---
+
+## 1. Architecture & Design Patterns
+
+### Core Design Pattern
+
+The SDK uses **factory functions** with **TypeScript mixins** for composable capabilities:
+
+```typescript
+// Factory function creates device instances
+const mySwitch = SinricProSwitch(deviceId);
+
+// NO new keyword needed
+// ❌ const mySwitch = new SinricProSwitch(deviceId);
+// ✅ const mySwitch = SinricProSwitch(deviceId);
+
+// Capabilities are composed via mixins
+class SinricProSwitchClass extends PowerStateController(SinricProDevice as any) {
+  constructor(deviceId: string) {
+    super(deviceId, 'SWITCH');
+  }
+}
+
+// Return type is intersection of all interfaces
+type SinricProSwitch = SinricProDevice & IPowerStateController;
+```
+
+### Why This Pattern?
+
+1. **User-friendly API** - No `new` keyword, cleaner syntax
+2. **Type safety** - Full TypeScript support with IntelliSense
+3. **Composability** - Mix and match capabilities via mixins
+4. **DRY principle** - Capabilities defined once, reused across devices
+5. **Flexibility** - Easy to add new devices by composing capabilities
+
+### Type System Workarounds
+
+Due to TypeScript limitations with mixins:
+
+```typescript
+// 1. Constructor with any[] parameters (required by TS)
+type Constructor<T = object> = new (...args: any[]) => T;
+
+// 2. Cast abstract class to any in mixin chain
+class DeviceClass extends Capability(SinricProDevice as any) { }
+
+// 3. Factory function restores proper types
+export function Device(id: string): SinricProDevice & ICapability {
+  return new DeviceClass(id) as any;
+}
+
+// 4. Declaration files disabled to avoid TS4094 errors
+// tsconfig.json: "declaration": false
+```
+
+### Project Structure
+
+```
+sinricpro-nodejs-sdk/
+├── src/
+│   ├── core/              # Core SDK functionality
+│   │   ├── SinricPro.ts          # Main singleton class
+│   │   ├── SinricProDevice.ts    # Abstract base device
+│   │   ├── WebSocketClient.ts    # WebSocket connection
+│   │   ├── MessageQueue.ts       # Message queue
+│   │   ├── Signature.ts          # HMAC-SHA256 signing
+│   │   ├── EventLimiter.ts       # Rate limiting
+│   │   └── types.ts              # Type definitions
+│   │
+│   ├── capabilities/      # 30 capability mixins
+│   │   ├── PowerStateController.ts
+│   │   ├── BrightnessController.ts
+│   │   ├── ModeController.ts
+│   │   └── ... (27 more)
+│   │
+│   ├── devices/           # 18 device implementations
+│   │   ├── SinricProSwitch.ts
+│   │   ├── SinricProLight.ts
+│   │   ├── SinricProGarageDoor.ts
+│   │   └── ... (15 more)
+│   │
+│   ├── utils/             # Utilities
+│   │   └── SinricProSdkLogger.ts
+│   │
+│   └── index.ts           # Main exports
+│
+├── examples/              # 16 working examples
+├── dist/                  # Compiled JavaScript
+├── package.json
+├── tsconfig.json
+└── README.md
+```
+
+---
+
+## 2. Installation & Setup
+
+### Installation
+
+```bash
+npm install sinricpro-sdk
+```
+
+### Basic Setup
+
+```typescript
+import SinricPro from 'sinricpro-sdk';
+import { SinricProSwitch } from 'sinricpro-sdk';
+import { SinricProSdkLogger, LogLevel } from 'sinricpro-sdk';
+
+// Optional: Set log level
+SinricProSdkLogger.setLevel(LogLevel.DEBUG); // DEBUG, INFO, WARN, ERROR, NONE
+
+// Configuration
+const DEVICE_ID = 'YOUR-DEVICE-ID'; // 24-character hex from SinricPro portal
+const APP_KEY = 'YOUR-APP-KEY';     // UUID format from portal
+const APP_SECRET = 'YOUR-APP-SECRET'; // Long secret key from portal
+
+// Create device
+const mySwitch = SinricProSwitch(DEVICE_ID);
+
+// Set up callback for commands from Alexa/Google Home
+mySwitch.onPowerState(async (deviceId: string, state: boolean) => {
+  console.log(`Device ${deviceId} turned ${state ? 'ON' : 'OFF'}`);
+
+  // Control your hardware here
+  // Example: GPIO.write(LED_PIN, state);
+
+  // Return true if successful, false otherwise
+  return true;
+
+  // Or return detailed response:
+  // return { success: true, message: 'Optional error message' };
+});
+
+// Add device to SinricPro
+SinricPro.add(mySwitch);
+
+// Optional: Connection event handlers
+SinricPro.onConnected(() => {
+  console.log('Connected to SinricPro!');
+});
+
+SinricPro.onDisconnected(() => {
+  console.log('Disconnected from SinricPro');
+});
+
+SinricPro.onPong((latency: number) => {
+  console.log(`Heartbeat latency: ${latency}ms`);
+});
+
+// Initialize and connect
+await SinricPro.begin({
+  appKey: APP_KEY,
+  appSecret: APP_SECRET,
+  // Optional settings:
+  // restoreDeviceStates: false, // Restore device states on reconnect
+  // debug: false,               // Enable debug logging
+});
+
+// Send events when local state changes
+await mySwitch.sendPowerStateEvent(true, 'PHYSICAL_INTERACTION');
+```
+
+---
+
+## 3. Core API Reference
+
+### SinricPro (Singleton)
+
+Main SDK class for managing devices and connection.
+
+```typescript
+class SinricPro {
+  // Initialize and connect
+  async begin(config: SinricProConfig): Promise<void>
+
+  // Add a device
+  add<T extends SinricProDevice>(device: T): T
+
+  // Get a device by ID
+  get(deviceId: string): SinricProDevice | undefined
+
+  // Stop SDK and disconnect
+  async stop(): Promise<void>
+
+  // Check connection status
+  isConnected(): boolean
+
+  // Event handlers
+  onConnected(callback: () => void): void
+  onDisconnected(callback: () => void): void
+  onPong(callback: (latency: number) => void): void
+}
+
+// Access singleton
+import SinricPro from 'sinricpro-sdk';
+// or
+import { SinricPro } from 'sinricpro-sdk';
+const instance = SinricPro.getInstance();
+```
+
+### SinricProConfig
+
+```typescript
+interface SinricProConfig {
+  appKey: string;              // Required: UUID from portal
+  appSecret: string;           // Required: Secret key from portal
+  restoreDeviceStates?: boolean; // Optional: Restore states on reconnect (default: false)
+  debug?: boolean;             // Optional: Enable debug logs (default: false)
+  // Note: serverUrl is NOT configurable (hardcoded to testws.sinric.pro)
+}
+```
+
+### SinricProDevice (Base Class)
+
+All devices extend this abstract class.
+
+```typescript
+abstract class SinricProDevice {
+  protected deviceId: string;
+  protected productType: string;
+
+  getDeviceId(): string
+  getProductType(): string
+
+  // Internal methods (don't call directly)
+  setSinricPro(sinricPro: ISinricPro): void
+  async handleRequest(request: SinricProRequest): Promise<boolean>
+
+  protected async sendEvent(
+    action: string,
+    value: Record<string, any>,
+    cause?: string
+  ): Promise<boolean>
+
+  protected generateMessageId(): string
+}
+```
+
+### SinricProSdkLogger
+
+Logging utility for the SDK.
+
+```typescript
+enum LogLevel {
+  DEBUG = 0,
+  INFO = 1,
+  WARN = 2,
+  ERROR = 3,
+  NONE = 4
+}
+
+class SinricProSdkLogger {
+  static setLevel(level: LogLevel): void
+  static debug(message: string, ...args: any[]): void
+  static info(message: string, ...args: any[]): void
+  static warn(message: string, ...args: any[]): void
+  static error(message: string, ...args: any[]): void
+}
+```
+
+---
+
+## 4. Device Reference (18 Devices)
+
+### Smart Home Devices
+
+#### SinricProSwitch
+Basic on/off switch.
+
+**Capabilities:** PowerStateController
+
+```typescript
+import { SinricProSwitch } from 'sinricpro-sdk';
+
+const mySwitch = SinricProSwitch(DEVICE_ID);
+
+// Callbacks
+mySwitch.onPowerState(async (deviceId, state) => {
+  console.log(`Power: ${state ? 'ON' : 'OFF'}`);
+  return true;
+});
+
+// Events
+await mySwitch.sendPowerStateEvent(true);
+```
+
+#### SinricProDimSwitch
+Dimmable switch with brightness control.
+
+**Capabilities:** PowerStateController, PowerLevelController
+
+```typescript
+import { SinricProDimSwitch } from 'sinricpro-sdk';
+
+const myDimSwitch = SinricProDimSwitch(DEVICE_ID);
+
+myDimSwitch.onPowerState(async (deviceId, state) => {
+  return true;
+});
+
+myDimSwitch.onPowerLevel(async (deviceId, level) => {
+  console.log(`Power level: ${level}%`);
+  return true;
+});
+
+await myDimSwitch.sendPowerLevelEvent(75);
+```
+
+#### SinricProLight
+Full-featured smart light with color and temperature.
+
+**Capabilities:** PowerStateController, BrightnessController, ColorController, ColorTemperatureController
+
+```typescript
+import { SinricProLight } from 'sinricpro-sdk';
+
+const myLight = SinricProLight(DEVICE_ID);
+
+myLight.onPowerState(async (deviceId, state) => true);
+myLight.onBrightness(async (deviceId, brightness) => true);
+myLight.onAdjustBrightness(async (deviceId, delta) => true);
+myLight.onColor(async (deviceId, r, g, b) => true);
+myLight.onColorTemperature(async (deviceId, temp) => true);
+myLight.onIncreaseColorTemperature(async (deviceId) => true);
+myLight.onDecreaseColorTemperature(async (deviceId) => true);
+
+await myLight.sendBrightnessEvent(75);
+await myLight.sendColorEvent(255, 0, 0); // Red
+await myLight.sendColorTemperatureEvent(2700);
+```
+
+#### SinricProLock
+Smart lock with lock/unlock control.
+
+**Capabilities:** LockController
+
+```typescript
+import { SinricProLock } from 'sinricpro-sdk';
+
+const myLock = SinricProLock(DEVICE_ID);
+
+myLock.onLockState(async (deviceId, lockState) => {
+  // lockState: 'LOCKED' | 'UNLOCKED' | 'JAMMED'
+  console.log(`Lock state: ${lockState}`);
+  return true;
+});
+
+await myLock.sendLockStateEvent('LOCKED');
+```
+
+#### SinricProBlinds
+Window blinds/curtains with position control.
+
+**Capabilities:** PowerStateController, OpenCloseController
+
+```typescript
+import { SinricProBlinds } from 'sinricpro-sdk';
+
+const myBlinds = SinricProBlinds(DEVICE_ID);
+
+myBlinds.onPowerState(async (deviceId, state) => true);
+
+myBlinds.onOpenClose(async (deviceId, position) => {
+  // position: 0-100 (0=closed, 100=open)
+  console.log(`Position: ${position}%`);
+  return true;
+});
+
+await myBlinds.sendOpenCloseEvent(50); // Half open
+```
+
+#### SinricProGarageDoor
+Garage door opener (uses ModeController).
+
+**Capabilities:** ModeController, PushNotification, SettingController
+
+**Important:** GarageDoor now uses ModeController with modes "OPEN" and "CLOSED"
+
+```typescript
+import { SinricProGarageDoor } from 'sinricpro-sdk';
+
+const myGarageDoor = SinricProGarageDoor(DEVICE_ID);
+
+// Handle mode changes (OPEN/CLOSED)
+myGarageDoor.onSetMode(async (deviceId, mode) => {
+  // mode: string ("OPEN" or "CLOSED")
+  console.log(`Garage door: ${mode}`);
+  return true;
+});
+
+// Send mode event
+await myGarageDoor.sendModeEvent('OPEN');
+await myGarageDoor.sendModeEvent('CLOSED');
+```
+
+### Climate Control
+
+#### SinricProThermostat
+Full thermostat with temperature control and modes.
+
+**Capabilities:** PowerStateController, ThermostatController, TemperatureSensor
+
+```typescript
+import { SinricProThermostat } from 'sinricpro-sdk';
+
+const myThermostat = SinricProThermostat(DEVICE_ID);
+
+myThermostat.onPowerState(async (deviceId, state) => true);
+
+myThermostat.onThermostatMode(async (deviceId, mode) => {
+  // mode: 'AUTO' | 'COOL' | 'HEAT' | 'ECO' | 'OFF'
+  return true;
+});
+
+myThermostat.onTargetTemperature(async (deviceId, temperature) => {
+  // temperature: { value: number, scale: 'CELSIUS' | 'FAHRENHEIT' }
+  console.log(`Target: ${temperature.value}°${temperature.scale[0]}`);
+  return true;
+});
+
+myThermostat.onAdjustTargetTemperature(async (deviceId, delta) => true);
+
+// Send temperature readings
+await myThermostat.sendTemperatureEvent(22.5, 60); // temp, humidity
+```
+
+#### SinricProWindowAC
+Window air conditioner unit.
+
+**Capabilities:** PowerStateController, ThermostatController, TemperatureSensor, RangeController, SettingController, PushNotification
+
+```typescript
+import { SinricProWindowAC } from 'sinricpro-sdk';
+
+const myAC = SinricProWindowAC(DEVICE_ID);
+
+myAC.onPowerState(async (deviceId, state) => true);
+myAC.onThermostatMode(async (deviceId, mode) => true);
+myAC.onTargetTemperature(async (deviceId, temp) => true);
+
+// Fan speed control (range 0-100)
+myAC.onRangeValue(async (deviceId, speed) => {
+  console.log(`Fan speed: ${speed}%`);
+  return true;
+});
+
+myAC.onAdjustRangeValue(async (deviceId, delta) => true);
+
+await myAC.sendTemperatureEvent(25, 65);
+```
+
+#### SinricProFan / SinricProFanUS
+Smart fan with speed control.
+
+**Capabilities:** PowerStateController, RangeController
+
+```typescript
+import { SinricProFan } from 'sinricpro-sdk';
+
+const myFan = SinricProFan(DEVICE_ID);
+
+myFan.onPowerState(async (deviceId, state) => true);
+
+myFan.onRangeValue(async (deviceId, speed) => {
+  // Map speed to fan levels
+  let level;
+  if (speed === 0) level = 'OFF';
+  else if (speed <= 33) level = 'LOW';
+  else if (speed <= 66) level = 'MEDIUM';
+  else level = 'HIGH';
+  return true;
+});
+
+myFan.onAdjustRangeValue(async (deviceId, delta) => true);
+
+await myFan.sendRangeValueEvent(66); // Medium speed
+```
+
+### Entertainment
+
+#### SinricProTV
+Smart TV with full control.
+
+**Capabilities:** PowerStateController, VolumeController, MuteController, ChannelController, InputController, MediaController
+
+```typescript
+import { SinricProTV } from 'sinricpro-sdk';
+
+const myTV = SinricProTV(DEVICE_ID);
+
+myTV.onPowerState(async (deviceId, state) => true);
+
+myTV.onVolume(async (deviceId, volume) => true);
+myTV.onAdjustVolume(async (deviceId, delta) => true);
+myTV.onMute(async (deviceId, mute) => true);
+
+myTV.onChangeChannel(async (deviceId, channel) => {
+  // channel: { name?: string, number?: string }
+  console.log(`Channel: ${channel.name || channel.number}`);
+  return true;
+});
+
+myTV.onSkipChannels(async (deviceId, count) => true);
+
+myTV.onSelectInput(async (deviceId, input) => {
+  // input: 'HDMI1', 'HDMI2', 'TV', etc.
+  return true;
+});
+
+myTV.onMediaControl(async (deviceId, control) => {
+  // control: 'Play' | 'Pause' | 'Stop' | 'Next' | 'Previous' | 'Rewind' | 'FastForward'
+  return true;
+});
+```
+
+#### SinricProSpeaker
+Smart speaker with equalizer and modes.
+
+**Capabilities:** PowerStateController, VolumeController, MuteController, MediaController, EqualizerController, ModeController, SettingController, PushNotification
+
+```typescript
+import { SinricProSpeaker } from 'sinricpro-sdk';
+
+const mySpeaker = SinricProSpeaker(DEVICE_ID);
+
+mySpeaker.onPowerState(async (deviceId, state) => true);
+mySpeaker.onVolume(async (deviceId, volume) => true);
+mySpeaker.onAdjustVolume(async (deviceId, delta) => true);
+mySpeaker.onMute(async (deviceId, mute) => true);
+mySpeaker.onMediaControl(async (deviceId, control) => true);
+
+// Equalizer control
+mySpeaker.onSetBands(async (deviceId, bands) => {
+  // bands: Array<{ name: string, level: number }>
+  // name: 'BASS' | 'MIDRANGE' | 'TREBLE'
+  // level: -10 to 10
+  return true;
+});
+
+mySpeaker.onAdjustBands(async (deviceId, bands) => {
+  // bands: Array<{ name: string, levelDelta: number }>
+  return true;
+});
+
+mySpeaker.onResetBands(async (deviceId, bands) => true);
+
+// Mode control
+mySpeaker.onSetMode(async (deviceId, mode) => {
+  // mode: 'MUSIC' | 'MOVIE' | 'NIGHT' | 'SPORT' | 'TV'
+  return true;
+});
+```
+
+#### SinricProCamera
+Security camera.
+
+**Capabilities:** PowerStateController, CameraController
+
+```typescript
+import { SinricProCamera } from 'sinricpro-sdk';
+
+const myCamera = SinricProCamera(DEVICE_ID);
+
+myCamera.onPowerState(async (deviceId, state) => true);
+
+// Send camera stream URL
+await myCamera.sendCameraStreamEvent('rtsp://192.168.1.100:8554/stream', 'RTSP');
+```
+
+#### SinricProDoorbell
+Smart doorbell.
+
+**Capabilities:** Doorbell, PushNotification
+
+```typescript
+import { SinricProDoorbell } from 'sinricpro-sdk';
+
+const myDoorbell = SinricProDoorbell(DEVICE_ID);
+
+// Send doorbell press event
+await myDoorbell.sendDoorbellEvent(); // 'pressed' is default
+```
+
+### Sensors
+
+#### SinricProMotionSensor
+Motion detection sensor.
+
+**Capabilities:** MotionSensor
+
+```typescript
+import { SinricProMotionSensor } from 'sinricpro-sdk';
+
+const sensor = SinricProMotionSensor(DEVICE_ID);
+
+// Send motion detected event
+await sensor.sendMotionEvent(true);  // Motion detected
+await sensor.sendMotionEvent(false); // No motion
+```
+
+#### SinricProContactSensor
+Door/window contact sensor.
+
+**Capabilities:** ContactSensor
+
+```typescript
+import { SinricProContactSensor } from 'sinricpro-sdk';
+
+const sensor = SinricProContactSensor(DEVICE_ID);
+
+// Send contact state
+await sensor.sendContactEvent(true);  // Closed
+await sensor.sendContactEvent(false); // Open
+```
+
+#### SinricProTemperatureSensor
+Temperature and humidity sensor.
+
+**Capabilities:** TemperatureSensor
+
+```typescript
+import { SinricProTemperatureSensor } from 'sinricpro-sdk';
+
+const sensor = SinricProTemperatureSensor(DEVICE_ID);
+
+// Send temperature and humidity
+await sensor.sendTemperatureEvent(22.5, 60); // temp, humidity
+```
+
+#### SinricProAirQualitySensor
+Air quality monitoring sensor.
+
+**Capabilities:** AirQualitySensor, TemperatureSensor
+
+```typescript
+import { SinricProAirQualitySensor } from 'sinricpro-sdk';
+
+const sensor = SinricProAirQualitySensor(DEVICE_ID);
+
+// Send air quality data
+await sensor.sendAirQualityEvent({
+  pm1: 10,    // PM1.0 µg/m³
+  pm2_5: 25,  // PM2.5 µg/m³
+  pm10: 50,   // PM10 µg/m³
+  aqi: 75     // Air Quality Index
+});
+
+await sensor.sendTemperatureEvent(22, 55);
+```
+
+#### SinricProPowerSensor
+Power consumption monitoring.
+
+**Capabilities:** PowerSensor
+
+```typescript
+import { SinricProPowerSensor } from 'sinricpro-sdk';
+
+const sensor = SinricProPowerSensor(DEVICE_ID);
+
+// Send power consumption data
+await sensor.sendPowerSensorEvent({
+  voltage: 230,      // Volts
+  current: 5.2,      // Amperes
+  power: 1196,       // Watts
+  apparentPower: 1196, // VA
+  reactivePower: 0   // VAR
+});
+```
+
+---
+
+## 5. Capability Reference (30 Capabilities)
+
+### PowerStateController
+Basic on/off control.
+
+```typescript
+interface IPowerStateController {
+  onPowerState(callback: PowerStateCallback): void;
+  sendPowerStateEvent(state: boolean, cause?: string): Promise<boolean>;
+}
+
+type PowerStateCallback = (
+  deviceId: string,
+  state: boolean
+) => Promise<CallbackResult> | CallbackResult;
+
+type CallbackResult = boolean | { success: boolean; message?: string };
+```
+
+### BrightnessController
+Brightness control (0-100).
+
+```typescript
+interface IBrightnessController {
+  onBrightness(callback: BrightnessCallback): void;
+  onAdjustBrightness(callback: AdjustBrightnessCallback): void;
+  sendBrightnessEvent(brightness: number, cause?: string): Promise<boolean>;
+}
+```
+
+### ColorController
+RGB color control.
+
+```typescript
+interface IColorController {
+  onColor(callback: ColorCallback): void;
+  sendColorEvent(r: number, g: number, b: number, cause?: string): Promise<boolean>;
+}
+
+type ColorCallback = (
+  deviceId: string,
+  r: number,
+  g: number,
+  b: number
+) => Promise<CallbackResult> | CallbackResult;
+```
+
+### ColorTemperatureController
+White color temperature control.
+
+```typescript
+interface IColorTemperatureController {
+  onColorTemperature(callback: ColorTemperatureCallback): void;
+  onIncreaseColorTemperature(callback: (deviceId: string) => Promise<CallbackResult> | CallbackResult): void;
+  onDecreaseColorTemperature(callback: (deviceId: string) => Promise<CallbackResult> | CallbackResult): void;
+  sendColorTemperatureEvent(temperature: number, cause?: string): Promise<boolean>;
+}
+```
+
+### ModeController
+Generic mode control (used for garage doors, speaker modes, etc.).
+
+```typescript
+interface IModeController {
+  onSetMode(callback: SetModeCallback): void;
+  sendModeEvent(mode: string, cause?: string): Promise<boolean>;
+}
+
+type SetModeCallback = (
+  deviceId: string,
+  mode: string
+) => Promise<CallbackResult> | CallbackResult;
+
+// Common mode values:
+// - Garage Door: 'OPEN', 'CLOSED'
+// - Speaker: 'MUSIC', 'MOVIE', 'NIGHT', 'SPORT', 'TV'
+// - Thermostat: 'AUTO', 'COOL', 'HEAT', 'ECO', 'OFF'
+```
+
+### VolumeController
+Volume control with relative adjustments.
+
+```typescript
+interface IVolumeController {
+  onVolume(callback: VolumeCallback): void;
+  onAdjustVolume(callback: AdjustVolumeCallback): void;
+  sendVolumeEvent(volume: number, cause?: string): Promise<boolean>;
+}
+```
+
+### RangeController
+Generic range values (used for fan speed, etc.).
+
+```typescript
+interface IRangeController {
+  onRangeValue(callback: RangeValueCallback): void;
+  onAdjustRangeValue(callback: AdjustRangeValueCallback): void;
+  sendRangeValueEvent(value: number, cause?: string): Promise<boolean>;
+}
+```
+
+### LockController
+Lock/unlock control.
+
+```typescript
+interface ILockController {
+  onLockState(callback: LockStateCallback): void;
+  sendLockStateEvent(lockState: 'LOCKED' | 'UNLOCKED' | 'JAMMED', cause?: string): Promise<boolean>;
+}
+```
+
+### ThermostatController
+Temperature control with modes.
+
+```typescript
+interface IThermostatController {
+  onThermostatMode(callback: ThermostatModeCallback): void;
+  onTargetTemperature(callback: TargetTemperatureCallback): void;
+  onAdjustTargetTemperature(callback: AdjustTargetTemperatureCallback): void;
+  sendThermostatModeEvent(mode: string, cause?: string): Promise<boolean>;
+  sendTargetTemperatureEvent(temperature: number, scale: 'CELSIUS' | 'FAHRENHEIT', cause?: string): Promise<boolean>;
+}
+```
+
+### TemperatureSensor
+Temperature and humidity reporting.
+
+```typescript
+interface ITemperatureSensor {
+  sendTemperatureEvent(temperature: number, humidity?: number, cause?: string): Promise<boolean>;
+}
+```
+
+### MediaController
+Media playback controls.
+
+```typescript
+interface IMediaController {
+  onMediaControl(callback: MediaControlCallback): void;
+}
+
+type MediaControlCallback = (
+  deviceId: string,
+  control: 'Play' | 'Pause' | 'Stop' | 'Next' | 'Previous' | 'Rewind' | 'FastForward'
+) => Promise<CallbackResult> | CallbackResult;
+```
+
+### ChannelController
+TV channel control.
+
+```typescript
+interface IChannelController {
+  onChangeChannel(callback: ChangeChannelCallback): void;
+  onSkipChannels(callback: SkipChannelsCallback): void;
+}
+
+type ChangeChannelCallback = (
+  deviceId: string,
+  channel: { name?: string; number?: string }
+) => Promise<CallbackResult> | CallbackResult;
+```
+
+### EqualizerController
+Audio equalizer control.
+
+```typescript
+interface IEqualizerController {
+  onSetBands(callback: SetBandsCallback): void;
+  onAdjustBands(callback: AdjustBandsCallback): void;
+  onResetBands(callback: ResetBandsCallback): void;
+}
+
+type SetBandsCallback = (
+  deviceId: string,
+  bands: Array<{ name: string; level: number }>
+) => Promise<CallbackResult> | CallbackResult;
+```
+
+### MotionSensor
+Motion detection events.
+
+```typescript
+interface IMotionSensor {
+  sendMotionEvent(detected: boolean, cause?: string): Promise<boolean>;
+}
+```
+
+### ContactSensor
+Contact state reporting.
+
+```typescript
+interface IContactSensor {
+  sendContactEvent(closed: boolean, cause?: string): Promise<boolean>;
+}
+```
+
+### AirQualitySensor
+Air quality metrics.
+
+```typescript
+interface IAirQualitySensor {
+  sendAirQualityEvent(data: AirQualityData, cause?: string): Promise<boolean>;
+}
+
+interface AirQualityData {
+  pm1?: number;
+  pm2_5?: number;
+  pm10?: number;
+  aqi?: number;
+}
+```
+
+### PowerSensor
+Power consumption reporting.
+
+```typescript
+interface IPowerSensor {
+  sendPowerSensorEvent(data: PowerSensorData, cause?: string): Promise<boolean>;
+}
+
+interface PowerSensorData {
+  voltage?: number;
+  current?: number;
+  power?: number;
+  apparentPower?: number;
+  reactivePower?: number;
+}
+```
+
+### OpenCloseController
+Position control (blinds, curtains).
+
+```typescript
+interface IOpenCloseController {
+  onOpenClose(callback: OpenCloseCallback): void;
+  sendOpenCloseEvent(position: number, cause?: string): Promise<boolean>;
+}
+
+type OpenCloseCallback = (
+  deviceId: string,
+  position: number // 0-100 (0=closed, 100=open)
+) => Promise<CallbackResult> | CallbackResult;
+```
+
+### PowerLevelController
+Power level settings (dimmer switches).
+
+```typescript
+interface IPowerLevelController {
+  onPowerLevel(callback: PowerLevelCallback): void;
+  onAdjustPowerLevel(callback: AdjustPowerLevelCallback): void;
+  sendPowerLevelEvent(level: number, cause?: string): Promise<boolean>;
+}
+```
+
+### MuteController
+Mute/unmute control.
+
+```typescript
+interface IMuteController {
+  onMute(callback: MuteCallback): void;
+  sendMuteEvent(mute: boolean, cause?: string): Promise<boolean>;
+}
+```
+
+### InputController
+Input source selection.
+
+```typescript
+interface IInputController {
+  onSelectInput(callback: SelectInputCallback): void;
+}
+
+type SelectInputCallback = (
+  deviceId: string,
+  input: string // 'HDMI1', 'HDMI2', 'TV', 'AUX', etc.
+) => Promise<CallbackResult> | CallbackResult;
+```
+
+### CameraController
+Camera streaming control.
+
+```typescript
+interface ICameraController {
+  sendCameraStreamEvent(streamUrl: string, protocol: string, cause?: string): Promise<boolean>;
+}
+```
+
+### Doorbell
+Doorbell press events.
+
+```typescript
+interface IDoorbell {
+  sendDoorbellEvent(state?: 'pressed' | 'released', cause?: string): Promise<boolean>;
+}
+```
+
+### PushNotification
+Send notifications.
+
+```typescript
+interface IPushNotification {
+  sendPushNotification(notification: string, cause?: string): Promise<boolean>;
+}
+```
+
+### SettingController, ToggleController, PercentageController, StartStopController, KeypadController
+Additional utility capabilities (see source code for detailed interfaces).
+
+---
+
+## 6. Type Definitions
+
+### Core Types
+
+```typescript
+// Configuration
+interface SinricProConfig {
+  appKey: string;
+  appSecret: string;
+  restoreDeviceStates?: boolean;
+  debug?: boolean;
+}
+
+// Message types
+enum MessageType {
+  Request = 'request',
+  Response = 'response',
+  Event = 'event',
+}
+
+// Message structure
+interface SinricProMessage {
+  header: MessageHeader;
+  payload: MessagePayload;
+  signature?: { HMAC: string };
+  timestamp?: number;
+}
+
+interface MessageHeader {
+  payloadVersion: number;
+  signatureVersion: number;
+}
+
+interface MessagePayload {
+  action: string;
+  deviceId?: string;
+  replyToken: string;
+  type: MessageType;
+  createdAt: number;
+  clientId?: string;
+  scope?: 'device' | 'module';
+  instanceId?: string;
+  value: Record<string, any>;
+  success?: boolean;
+  message?: string;
+  cause?: { type: string };
+}
+
+// Request handling
+interface SinricProRequest {
+  action: string;
+  instance: string;
+  requestValue: Record<string, any>;
+  responseValue: Record<string, any>;
+  errorMessage?: string;
+}
+
+type RequestHandler = (request: SinricProRequest) => Promise<boolean> | boolean;
+
+// Callbacks
+type ConnectedCallback = () => void;
+type DisconnectedCallback = () => void;
+type PongCallback = (latency: number) => void;
+
+type CallbackResult = boolean | { success: boolean; message?: string };
+```
+
+### Event Causes
+
+```typescript
+const PHYSICAL_INTERACTION = 'PHYSICAL_INTERACTION'; // User pressed button
+const APP_INTERACTION = 'APP_INTERACTION';           // App control
+const VOICE_INTERACTION = 'VOICE_INTERACTION';       // Voice command
+const PERIODIC_POLL = 'PERIODIC_POLL';               // Periodic update
+```
+
+### Constants
+
+```typescript
+const SINRICPRO_SERVER_URL = 'testws.sinric.pro';
+const SINRICPRO_SERVER_PORT = 80;
+const SINRICPRO_SERVER_SSL_PORT = 443;
+const WEBSOCKET_PING_INTERVAL = 300000; // 5 minutes
+const WEBSOCKET_PING_TIMEOUT = 10000;   // 10 seconds
+const EVENT_LIMIT_STATE = 1000;         // 1 second
+const EVENT_LIMIT_SENSOR_VALUE = 60000; // 60 seconds
+```
+
+---
+
+## 7. Examples & Usage Patterns
+
+### Multi-Device Example
+
+```typescript
+import SinricPro from 'sinricpro-sdk';
+import { SinricProSwitch, SinricProLight, SinricProThermostat } from 'sinricpro-sdk';
+
+// Create multiple devices
+const livingRoomLight = SinricProLight('device-id-1');
+const bedroomSwitch = SinricProSwitch('device-id-2');
+const thermostat = SinricProThermostat('device-id-3');
+
+// Set up callbacks for each device
+livingRoomLight.onPowerState(async (id, state) => {
+  console.log(`Living room light: ${state ? 'ON' : 'OFF'}`);
+  return true;
+});
+
+livingRoomLight.onBrightness(async (id, brightness) => {
+  console.log(`Living room brightness: ${brightness}%`);
+  return true;
+});
+
+bedroomSwitch.onPowerState(async (id, state) => {
+  console.log(`Bedroom switch: ${state ? 'ON' : 'OFF'}`);
+  return true;
+});
+
+thermostat.onThermostatMode(async (id, mode) => {
+  console.log(`Thermostat mode: ${mode}`);
+  return true;
+});
+
+// Add all devices
+SinricPro.add(livingRoomLight);
+SinricPro.add(bedroomSwitch);
+SinricPro.add(thermostat);
+
+// Connect once
+await SinricPro.begin({
+  appKey: APP_KEY,
+  appSecret: APP_SECRET,
+});
+```
+
+### Error Handling
+
+```typescript
+const mySwitch = SinricProSwitch(DEVICE_ID);
+
+mySwitch.onPowerState(async (deviceId, state) => {
+  try {
+    // Attempt to control hardware
+    await controlHardware(state);
+    return true; // Success
+  } catch (error) {
+    console.error('Hardware control failed:', error);
+    // Return error message
+    return {
+      success: false,
+      message: `Failed to control hardware: ${error.message}`
+    };
+  }
+});
+```
+
+### Event Rate Limiting
+
+```typescript
+const sensor = SinricProMotionSensor(DEVICE_ID);
+
+// Send events respecting rate limits
+setInterval(async () => {
+  const success = await sensor.sendMotionEvent(true);
+
+  if (!success) {
+    console.log('Event was rate limited');
+    // Event rate limited - try again later
+  } else {
+    console.log('Event sent successfully');
+  }
+}, 5000); // Try every 5 seconds (but rate limited to 1/second)
+```
+
+### Graceful Shutdown
+
+```typescript
+process.on('SIGINT', async () => {
+  console.log('Shutting down gracefully...');
+  await SinricPro.stop();
+  console.log('Disconnected from SinricPro');
+  process.exit(0);
+});
+
+process.on('SIGTERM', async () => {
+  await SinricPro.stop();
+  process.exit(0);
+});
+```
+
+### Connection Monitoring
+
+```typescript
+let reconnectAttempts = 0;
+
+SinricPro.onConnected(() => {
+  console.log('✓ Connected to SinricPro');
+  reconnectAttempts = 0;
+});
+
+SinricPro.onDisconnected(() => {
+  console.log('✗ Disconnected from SinricPro');
+  reconnectAttempts++;
+
+  if (reconnectAttempts > 5) {
+    console.error('Too many reconnection attempts');
+    process.exit(1);
+  }
+});
+
+SinricPro.onPong((latency) => {
+  console.log(`Heartbeat: ${latency}ms`);
+
+  if (latency > 5000) {
+    console.warn('High latency detected');
+  }
+});
+```
+
+---
+
+## 8. Advanced Topics
+
+### Creating Custom Devices
+
+To create a custom device, compose existing capabilities:
+
+```typescript
+import { SinricProDevice } from 'sinricpro-sdk';
+import { PowerStateController, IPowerStateController } from 'sinricpro-sdk';
+import { BrightnessController, IBrightnessController } from 'sinricpro-sdk';
+
+// Internal class with mixins
+class MyCustomDeviceClass extends BrightnessController(
+  PowerStateController(SinricProDevice as any)
+) {
+  constructor(deviceId: string) {
+    super(deviceId, 'CUSTOM_TYPE');
+  }
+}
+
+// Factory function with proper types
+export function MyCustomDevice(
+  deviceId: string
+): SinricProDevice & IPowerStateController & IBrightnessController {
+  return new MyCustomDeviceClass(deviceId) as any;
+}
+
+// Type alias
+export type MyCustomDevice = SinricProDevice &
+  IPowerStateController &
+  IBrightnessController;
+```
+
+### WebSocket Protocol
+
+The SDK uses WebSocket with the following features:
+
+1. **Connection:** wss://testws.sinric.pro (SSL)
+2. **Authentication:** HMAC-SHA256 signature on all messages
+3. **Heartbeat:** Ping every 5 minutes, timeout after 10 seconds
+4. **Auto-reconnect:** Automatic reconnection on disconnect
+5. **Message queues:** Separate queues for send/receive
+
+### Message Flow
+
+1. **Incoming Request (from Alexa/Google Home):**
+   ```
+   Server → WebSocket → MessageQueue → Signature Validation →
+   Request Routing → Device Handler → Callback → Response → Server
+   ```
+
+2. **Outgoing Event (local state change):**
+   ```
+   Device.sendEvent() → Sign Message → MessageQueue → WebSocket → Server
+   ```
+
+### Signature Validation
+
+All messages are signed with HMAC-SHA256:
+
+```typescript
+// Automatic - handled by SDK
+const signature = crypto
+  .createHmac('sha256', appSecret)
+  .update(JSON.stringify(message.payload))
+  .digest('base64');
+```
+
+### Rate Limiting
+
+Two types of rate limits:
+
+1. **State Events:** 1 event per second (1000ms)
+   - PowerState, LockState, ModeState, etc.
+
+2. **Sensor Events:** 1 event per 60 seconds (60000ms)
+   - Temperature, Motion, Contact, AirQuality, etc.
+
+Rate limiting is automatic via `EventLimiter` class.
+
+---
+
+## 9. Troubleshooting
+
+### Common Issues
+
+#### 1. TypeScript Compilation Errors
+
+**Error:** TS4094: Property 'propertyName' of exported class expression may not be private or protected.
+
+**Solution:** Declaration files are disabled. This is expected and correct.
+
+```json
+// tsconfig.json
+{
+  "compilerOptions": {
+    "declaration": false
+  }
+}
+```
+
+#### 2. Import Errors
+
+**Error:** Cannot find module 'sinricpro-sdk'
+
+**Solution:** Use correct import paths:
+
+```typescript
+// ✅ Correct
+import SinricPro from 'sinricpro-sdk';
+import { SinricProSwitch } from 'sinricpro-sdk';
+
+// ❌ Wrong
+import SinricPro from '../../src/core/SinricPro';
+```
+
+#### 3. Connection Failures
+
+**Error:** Failed to connect to SinricPro
+
+**Checklist:**
+- Verify APP_KEY is UUID format (xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)
+- Verify APP_SECRET is at least 32 characters
+- Verify DEVICE_ID is 24 hex characters
+- Check internet connection
+- Verify credentials from SinricPro portal
+
+#### 4. Events Not Sent
+
+**Possible causes:**
+- Rate limited (check return value)
+- Device not added to SinricPro
+- Not connected to server
+- Invalid event data
+
+**Debug:**
+```typescript
+SinricProSdkLogger.setLevel(LogLevel.DEBUG);
+
+const success = await device.sendEvent(...);
+if (!success) {
+  console.log('Event failed - check logs');
+}
+```
+
+#### 5. Callbacks Not Called
+
+**Checklist:**
+- Device added to SinricPro before begin()
+- Callback registered before begin()
+- Return true from callback
+- Check device ID matches portal
+- Verify device type matches portal
+
+#### 6. GarageDoor Issues
+
+**Important:** GarageDoor now uses ModeController
+
+```typescript
+// ❌ Old (deprecated)
+myGarageDoor.onDoorState(async (deviceId, state) => { ... });
+
+// ✅ New (correct)
+myGarageDoor.onSetMode(async (deviceId, mode) => {
+  // mode will be "OPEN" or "CLOSED"
+  ...
+});
+```
+
+### Debug Logging
+
+Enable debug logging to troubleshoot:
+
+```typescript
+import { SinricProSdkLogger, LogLevel } from 'sinricpro-sdk';
+
+// Set log level before anything else
+SinricProSdkLogger.setLevel(LogLevel.DEBUG);
+
+// Levels: DEBUG, INFO, WARN, ERROR, NONE
+```
+
+### Validation
+
+Use built-in validation:
+
+```typescript
+// Device ID format: 24 hex characters
+const deviceIdRegex = /^[a-f0-9]{24}$/i;
+
+// App Key format: UUID
+const appKeyRegex = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
+
+// App Secret: minimum 32 characters
+const appSecretMinLength = 32;
+```
+
+---
+
+## Build & Development
+
+### NPM Scripts
+
+```bash
+npm run build          # Compile TypeScript → dist/
+npm run build:watch    # Watch mode compilation
+npm run lint           # Run ESLint
+npm run lint:fix       # Auto-fix ESLint issues
+npm run format         # Format with Prettier
+npm test               # Run Jest tests
+npm run test:watch     # Watch mode tests
+npm run test:coverage  # Generate coverage report
+
+# Run examples (require credentials)
+npm run example:switch
+npm run example:light
+npm run example:thermostat
+npm run example:tv
+npm run example:fan
+npm run example:lock
+npm run example:windowac
+npm run example:speaker
+```
+
+### TypeScript Configuration
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "lib": ["ES2020"],
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "declaration": false,        // Required for mixin pattern
+    "declarationMap": false,
+    "sourceMap": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "test", "examples"]
+}
+```
+
+### Package.json Exports
+
+```json
+{
+  "name": "sinricpro-sdk",
+  "version": "3.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./devices": "./dist/devices/index.js",
+    "./capabilities": "./dist/capabilities/index.js"
+  }
+}
+```
+
+---
+
+## Migration Notes
+
+### Version 2.x → 3.0.0
+
+#### 1. Server URL No Longer Configurable
+
+```typescript
+// ❌ Version 2.x
+await SinricPro.begin({
+  serverUrl: 'testws.sinric.pro',
+  appKey: APP_KEY,
+  appSecret: APP_SECRET,
+});
+
+// ✅ Version 3.0.0
+await SinricPro.begin({
+  appKey: APP_KEY,
+  appSecret: APP_SECRET,
+});
+```
+
+#### 2. GarageDoor Uses ModeController
+
+```typescript
+// ❌ Version 2.x
+import { SinricProGarageDoor } from 'sinricpro-sdk';
+const door = SinricProGarageDoor(DEVICE_ID);
+door.onDoorState(async (id, state) => { ... });
+await door.sendDoorStateEvent('OPEN');
+
+// ✅ Version 3.0.0
+import { SinricProGarageDoor } from 'sinricpro-sdk';
+const door = SinricProGarageDoor(DEVICE_ID);
+door.onSetMode(async (id, mode) => { ... });
+await door.sendModeEvent('OPEN');
+```
+
+#### 3. Import Paths
+
+Examples now use npm-style imports:
+
+```typescript
+// ❌ Development/relative imports
+import SinricPro from '../../src/core/SinricPro';
+
+// ✅ NPM package imports
+import SinricPro from 'sinricpro-sdk';
+```
+
+---
+
+## Complete Example
+
+Here's a comprehensive example showing best practices:
+
+```typescript
+import SinricPro from 'sinricpro-sdk';
+import {
+  SinricProSwitch,
+  SinricProLight,
+  SinricProThermostat
+} from 'sinricpro-sdk';
+import { SinricProSdkLogger, LogLevel } from 'sinricpro-sdk';
+
+// Enable debug logging
+SinricProSdkLogger.setLevel(LogLevel.DEBUG);
+
+// Configuration from environment or config file
+const CONFIG = {
+  SWITCH_ID: process.env.SWITCH_ID || 'YOUR-DEVICE-ID',
+  LIGHT_ID: process.env.LIGHT_ID || 'YOUR-DEVICE-ID',
+  THERMOSTAT_ID: process.env.THERMOSTAT_ID || 'YOUR-DEVICE-ID',
+  APP_KEY: process.env.APP_KEY || 'YOUR-APP-KEY',
+  APP_SECRET: process.env.APP_SECRET || 'YOUR-APP-SECRET',
+};
+
+// Hardware control functions (mock)
+const Hardware = {
+  setSwitch: async (state: boolean) => {
+    console.log(`Hardware: Switch ${state ? 'ON' : 'OFF'}`);
+  },
+  setLight: async (state: boolean, brightness?: number) => {
+    console.log(`Hardware: Light ${state ? 'ON' : 'OFF'}, Brightness: ${brightness}%`);
+  },
+  setThermostat: async (mode: string, temp: number) => {
+    console.log(`Hardware: Thermostat mode=${mode}, temp=${temp}°C`);
+  },
+};
+
+async function main() {
+  console.log('='.repeat(60));
+  console.log('SinricPro Smart Home Control');
+  console.log('='.repeat(60));
+
+  // Create devices
+  const mySwitch = SinricProSwitch(CONFIG.SWITCH_ID);
+  const myLight = SinricProLight(CONFIG.LIGHT_ID);
+  const myThermostat = SinricProThermostat(CONFIG.THERMOSTAT_ID);
+
+  // Configure switch
+  mySwitch.onPowerState(async (deviceId, state) => {
+    console.log(`[Switch] Command: ${state ? 'ON' : 'OFF'}`);
+    try {
+      await Hardware.setSwitch(state);
+      return true;
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
+  });
+
+  // Configure light
+  let lightState = { power: false, brightness: 100 };
+
+  myLight.onPowerState(async (deviceId, state) => {
+    console.log(`[Light] Power: ${state ? 'ON' : 'OFF'}`);
+    lightState.power = state;
+    await Hardware.setLight(state, lightState.brightness);
+    return true;
+  });
+
+  myLight.onBrightness(async (deviceId, brightness) => {
+    console.log(`[Light] Brightness: ${brightness}%`);
+    lightState.brightness = brightness;
+    await Hardware.setLight(lightState.power, brightness);
+    return true;
+  });
+
+  myLight.onAdjustBrightness(async (deviceId, delta) => {
+    lightState.brightness = Math.max(0, Math.min(100, lightState.brightness + delta));
+    console.log(`[Light] Brightness adjusted: ${lightState.brightness}%`);
+    await Hardware.setLight(lightState.power, lightState.brightness);
+    return true;
+  });
+
+  // Configure thermostat
+  let thermostatState = { mode: 'AUTO', targetTemp: 22 };
+
+  myThermostat.onThermostatMode(async (deviceId, mode) => {
+    console.log(`[Thermostat] Mode: ${mode}`);
+    thermostatState.mode = mode;
+    await Hardware.setThermostat(mode, thermostatState.targetTemp);
+    return true;
+  });
+
+  myThermostat.onTargetTemperature(async (deviceId, temp) => {
+    console.log(`[Thermostat] Target: ${temp.value}°${temp.scale[0]}`);
+    thermostatState.targetTemp = temp.value;
+    await Hardware.setThermostat(thermostatState.mode, temp.value);
+    return true;
+  });
+
+  // Add all devices
+  SinricPro.add(mySwitch);
+  SinricPro.add(myLight);
+  SinricPro.add(myThermostat);
+
+  // Connection events
+  SinricPro.onConnected(() => {
+    console.log('\n✓ Connected to SinricPro!');
+    console.log('  Devices ready for voice control\n');
+  });
+
+  SinricPro.onDisconnected(() => {
+    console.log('\n✗ Disconnected from SinricPro');
+    console.log('  Attempting to reconnect...\n');
+  });
+
+  SinricPro.onPong((latency) => {
+    console.log(`♥ Heartbeat: ${latency}ms`);
+  });
+
+  // Connect to SinricPro
+  await SinricPro.begin({
+    appKey: CONFIG.APP_KEY,
+    appSecret: CONFIG.APP_SECRET,
+    debug: true,
+  });
+
+  // Simulate sensor readings every 60 seconds
+  setInterval(async () => {
+    const temperature = 20 + Math.random() * 5; // 20-25°C
+    const humidity = 40 + Math.random() * 20;   // 40-60%
+
+    const success = await myThermostat.sendTemperatureEvent(
+      parseFloat(temperature.toFixed(1)),
+      parseFloat(humidity.toFixed(1))
+    );
+
+    if (success) {
+      console.log(`[Sensor] Temp: ${temperature.toFixed(1)}°C, Humidity: ${humidity.toFixed(1)}%`);
+    }
+  }, 60000);
+
+  console.log('Waiting for voice commands...');
+  console.log('Try: "Alexa, turn on the light"');
+  console.log('     "Alexa, set light brightness to 50%"');
+  console.log('     "Alexa, set thermostat to 22 degrees"\n');
+}
+
+// Graceful shutdown
+process.on('SIGINT', async () => {
+  console.log('\n\nShutting down gracefully...');
+  await SinricPro.stop();
+  console.log('Disconnected. Goodbye!\n');
+  process.exit(0);
+});
+
+process.on('SIGTERM', async () => {
+  await SinricPro.stop();
+  process.exit(0);
+});
+
+// Error handling
+process.on('unhandledRejection', (error) => {
+  console.error('Unhandled error:', error);
+  process.exit(1);
+});
+
+// Run
+main().catch((error) => {
+  console.error('Fatal error:', error);
+  process.exit(1);
+});
+```
+
+---
+
+## Resources
+
+- **SinricPro Portal:** https://portal.sinric.pro
+- **Documentation:** https://help.sinric.pro
+- **GitHub:** https://github.com/sinricpro/nodejs-sdk
+- **Community:** https://community.sinric.pro
+- **Support:** support@sinric.pro
+
+---
+
+## License
+
+CC-BY-SA-4.0
+
+---
+
+Generated with Claude Code

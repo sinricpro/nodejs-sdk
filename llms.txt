@@ -1,0 +1,234 @@
+# SinricPro Node.js/TypeScript SDK - LLM Context (Summary)
+
+> Official SDK for SinricPro IoT platform. Control smart home devices with Alexa and Google Home.
+> npm: sinricpro-sdk | Version: 3.0.0 | License: CC-BY-SA-4.0
+
+## Architecture
+
+**Pattern:** Factory functions + TypeScript mixins for composable capabilities
+
+```typescript
+// Factory function creates devices
+const mySwitch = SinricProSwitch(deviceId);
+
+// Type is intersection of all capabilities
+type SinricProSwitch = SinricProDevice & IPowerStateController;
+```
+
+## Quick Start
+
+```typescript
+import SinricPro from 'sinricpro-sdk';
+import { SinricProSwitch } from 'sinricpro-sdk';
+import { SinricProSdkLogger, LogLevel } from 'sinricpro-sdk';
+
+const DEVICE_ID = 'YOUR-DEVICE-ID'; // 24-char hex
+const APP_KEY = 'YOUR-APP-KEY';     // UUID format
+const APP_SECRET = 'YOUR-APP-SECRET';
+
+// Create device
+const mySwitch = SinricProSwitch(DEVICE_ID);
+
+// Set up callback
+mySwitch.onPowerState(async (deviceId, state) => {
+  console.log(`Device ${state ? 'ON' : 'OFF'}`);
+  // Control hardware here
+  return true; // Return true if successful
+});
+
+// Add to SinricPro
+SinricPro.add(mySwitch);
+
+// Connect
+await SinricPro.begin({
+  appKey: APP_KEY,
+  appSecret: APP_SECRET,
+});
+
+// Send events when local state changes
+await mySwitch.sendPowerStateEvent(true);
+```
+
+## Available Devices (18)
+
+### Smart Home
+- **SinricProSwitch** - Basic on/off
+- **SinricProDimSwitch** - Dimmable switch
+- **SinricProLight** - Full smart light (color, brightness, temperature)
+- **SinricProLock** - Smart lock
+- **SinricProBlinds** - Window blinds/curtains
+- **SinricProGarageDoor** - Garage door (uses ModeController with OPEN/CLOSED modes)
+
+### Climate
+- **SinricProThermostat** - Full thermostat
+- **SinricProWindowAC** - Window AC unit
+- **SinricProFan** - Smart fan
+- **SinricProFanUS** - US-style fan
+
+### Entertainment
+- **SinricProTV** - Smart TV
+- **SinricProSpeaker** - Smart speaker
+- **SinricProCamera** - Security camera
+- **SinricProDoorbell** - Smart doorbell
+
+### Sensors
+- **SinricProMotionSensor** - Motion detection
+- **SinricProContactSensor** - Door/window sensor
+- **SinricProTemperatureSensor** - Temperature/humidity
+- **SinricProAirQualitySensor** - Air quality (PM2.5, PM10, AQI)
+- **SinricProPowerSensor** - Power consumption
+
+## Key Capabilities (30)
+
+### State Control
+- PowerStateController - on/off
+- LockController - lock/unlock
+- ModeController - generic modes (used for garage doors, speaker modes, etc.)
+
+### Adjustment
+- BrightnessController - brightness 0-100
+- VolumeController - volume control
+- ColorController - RGB color
+- ColorTemperatureController - white temperature
+- RangeController - generic range values
+
+### Media
+- MediaController - play/pause/stop/skip
+- ChannelController - channel selection
+- InputController - input source
+- MuteController - mute/unmute
+- EqualizerController - audio EQ
+
+### Climate
+- ThermostatController - temperature + modes
+- TemperatureSensor - temp/humidity reporting
+
+### Sensors
+- MotionSensor - motion events
+- ContactSensor - contact state
+- AirQualitySensor - air quality metrics
+- PowerSensor - power consumption
+
+## Common Patterns
+
+### Callback Pattern
+```typescript
+device.onCapability(async (deviceId, ...params) => {
+  // Handle request from Alexa/Google Home
+  return true; // or { success: true, message: 'optional error' }
+});
+```
+
+### Event Pattern
+```typescript
+// Send event when local state changes
+await device.sendCapabilityEvent(value, 'PHYSICAL_INTERACTION');
+```
+
+### Multi-Capability Device
+```typescript
+const myLight = SinricProLight(DEVICE_ID);
+
+myLight.onPowerState(async (deviceId, state) => { ... });
+myLight.onBrightness(async (deviceId, brightness) => { ... });
+myLight.onColor(async (deviceId, r, g, b) => { ... });
+myLight.onColorTemperature(async (deviceId, temp) => { ... });
+```
+
+## Important Notes
+
+### Type System
+- All devices use factory functions (no `new` keyword)
+- Return types are intersections: `SinricProDevice & ICapability1 & ICapability2`
+- Abstract SinricProDevice cast as `any` in mixin chain (required by TypeScript)
+- Declaration files disabled in tsconfig to avoid TS4094 errors
+
+### GarageDoor Migration
+- GarageDoor now uses **ModeController** (not DoorController)
+- Methods: `onSetMode()` and `sendModeEvent()`
+- Mode values: "OPEN" or "CLOSED"
+
+### Configuration
+- Server URL is hardcoded to `testws.sinric.pro` (not configurable)
+- No `serverUrl` parameter in SinricProConfig
+- Debug defaults to false unless explicitly set
+
+### Event Rate Limiting
+- State events: 1 second limit
+- Sensor events: 60 second limit
+- Returns false if rate limited
+
+### Message Format
+- WebSocket connection with HMAC-SHA256 authentication
+- Automatic reconnection
+- Message queues for send/receive
+- Signature validation on all messages
+
+## Project Structure
+
+```
+src/
+├── core/              # SinricPro, SinricProDevice, WebSocket, types
+├── capabilities/      # 30 capability mixins
+├── devices/          # 18 device implementations
+├── utils/            # Logger
+└── index.ts          # Main exports
+
+examples/             # 16 working examples
+```
+
+## Main Exports
+
+```typescript
+// From 'sinricpro-sdk'
+export { SinricPro };           // Singleton class
+export default SinricPro;       // Default export
+
+export { SinricProDevice };     // Base class
+
+// All devices
+export { SinricProSwitch, SinricProLight, ... };
+
+// All capabilities (interfaces and mixins)
+export { IPowerStateController, PowerStateController, ... };
+
+// Utilities
+export { SinricProSdkLogger, LogLevel };
+
+// Types
+export type { SinricProConfig, SinricProMessage, ... };
+```
+
+## Development Commands
+
+```bash
+npm run build        # Compile TypeScript
+npm run lint         # Run ESLint
+npm run format       # Run Prettier
+npm test            # Run tests
+
+# Run examples (require credentials)
+npm run example:switch
+npm run example:light
+npm run example:thermostat
+# ... etc
+```
+
+## TypeScript Configuration
+
+- Target: ES2020
+- Module: CommonJS
+- Strict mode: enabled
+- **Declaration: false** (required for mixin pattern)
+- Source maps: enabled
+
+## Common Issues
+
+1. **Type errors in mixins** - Use `as any` with eslint-disable comments
+2. **Abstract class errors** - Cast SinricProDevice to `any` in mixin chain
+3. **Import errors** - Use 'sinricpro-sdk', not relative paths
+4. **Credentials format** - deviceId: 24 hex chars, appKey: UUID format
+
+---
+
+For complete API reference and detailed examples, see llms-full.txt
