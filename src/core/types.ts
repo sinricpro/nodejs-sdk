@@ -111,7 +111,7 @@ export type TemperatureCallback = (
 ) => Promise<CallbackResult> | CallbackResult;
 
 // Constants
-export const SINRICPRO_SERVER_URL = 'testws.sinric.pro';
+export const SINRICPRO_SERVER_URL = 'ws.sinric.pro';
 export const SINRICPRO_SERVER_PORT = 80;
 export const SINRICPRO_SERVER_SSL_PORT = 443;
 export const WEBSOCKET_PING_INTERVAL = 300000; // 5 minutes

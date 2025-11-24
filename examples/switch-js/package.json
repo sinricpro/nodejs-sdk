@@ -1,0 +1,25 @@
+{
+  "name": "sinricpro-switch-example",
+  "version": "1.0.0",
+  "description": "SinricPro Switch Example using JavaScript",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [
+    "sinricpro",
+    "alexa",
+    "google-home",
+    "smart-home",
+    "iot",
+    "switch"
+  ],
+  "author": "SinricPro",
+  "license": "CC-BY-SA-4.0",
+  "dependencies": {
+    "sinricpro": "^4.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
