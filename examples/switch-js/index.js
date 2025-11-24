@@ -34,8 +34,7 @@ async function main() {
   // This is called when Alexa/Google Home sends a command
   mySwitch.onPowerState(async (deviceId, state) => {
     console.log(`\n[Callback] Device ${deviceId} turned ${state ? 'ON' : 'OFF'}`);
-    console.log('    Source: Alexa/Google Home/SinricPro App');
-
+    
     // Update local state
     devicePowerState = state;
 
@@ -44,9 +43,6 @@ async function main() {
     // - GPIO.write(LED_PIN, state);
     // - relay.setState(state);
     // - httpRequest('http://192.168.1.100/switch', { state });
-
-    console.log(`    Action: Simulated hardware is now ${state ? 'ON' : 'OFF'}`);
-
     return true; // Return true if successful, false if failed
   });
 
