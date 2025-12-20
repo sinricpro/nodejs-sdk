@@ -1,4 +1,10 @@
-## [3.0.0]
+## [5.0.0]
+
+### Features
+
+* feat: remove restoreDeviceStates in order to change this at device level from server side instead of fixed value in client
+
+## [4.0.0]
 
 ### Features
 
