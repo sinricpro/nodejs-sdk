@@ -172,7 +172,6 @@ await SinricPro.begin({
   appKey: APP_KEY,
   appSecret: APP_SECRET,
   // Optional settings:
-  // restoreDeviceStates: false, // Restore device states on reconnect
   // debug: false,               // Enable debug logging
 });
 
@@ -224,7 +223,6 @@ const instance = SinricPro.getInstance();
 interface SinricProConfig {
   appKey: string;              // Required: UUID from portal
   appSecret: string;           // Required: Secret key from portal
-  restoreDeviceStates?: boolean; // Optional: Restore states on reconnect (default: false)
   debug?: boolean;             // Optional: Enable debug logs (default: false)
   // Note: serverUrl is NOT configurable (hardcoded to testws.sinric.pro)
 }
@@ -1010,7 +1008,6 @@ Additional utility capabilities (see source code for detailed interfaces).
 interface SinricProConfig {
   appKey: string;
   appSecret: string;
-  restoreDeviceStates?: boolean;
   debug?: boolean;
 }
 

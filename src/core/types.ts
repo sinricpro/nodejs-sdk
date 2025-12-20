@@ -5,7 +5,6 @@
 export interface SinricProConfig {
   appKey: string;
   appSecret: string;
-  restoreDeviceStates?: boolean;
   debug?: boolean;
 }
 
