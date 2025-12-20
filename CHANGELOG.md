@@ -2,7 +2,7 @@
 
 ### Features
 
-* feat: remove restoreDeviceStates in order to change this at device level from server side instead of fixed value in client
+* BREAKING CHANGE: feat: remove restoreDeviceStates in order to change this at device level from server side instead of fixed value in client
 
 ## [4.0.0]
 
