@@ -79,7 +79,6 @@ export class SinricPro extends EventEmitter implements ISinricPro {
 
     this.config = {
       serverUrl: SINRICPRO_SERVER_URL,
-      restoreDeviceStates: false,
       debug: false,
       ...config,
     };
@@ -98,7 +97,6 @@ export class SinricPro extends EventEmitter implements ISinricPro {
       serverUrl: this.config.serverUrl,
       appKey: this.config.appKey,
       deviceIds: Array.from(this.devices.keys()),
-      restoreDeviceStates: this.config.restoreDeviceStates,
     });
 
     this.setupWebSocketHandlers();

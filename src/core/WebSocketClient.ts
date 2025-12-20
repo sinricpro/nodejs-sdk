@@ -16,7 +16,6 @@ export interface WebSocketConfig {
   serverUrl: string;
   appKey: string;
   deviceIds: string[];
-  restoreDeviceStates: boolean;
   platform?: string;
   sdkVersion?: string;
 }
@@ -53,7 +52,6 @@ export class WebSocketClient extends EventEmitter {
     const headers: Record<string, string> = {
       appkey: this.config.appKey,
       deviceids: this.config.deviceIds.join(';'),
-      restoredevicestates: this.config.restoreDeviceStates.toString(),
       platform: this.config.platform || 'NodeJS',
       SDKVersion: this.config.sdkVersion || version,
     };
