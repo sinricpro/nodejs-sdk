@@ -80,7 +80,7 @@ async function main() {
   console.log('    - Examples: WiFi retry count, log level');
 
   console.log('\n' + '='.repeat(60));
-  
+
   console.log('\n' + '='.repeat(60));
   console.log('Voice Commands:');
   console.log('='.repeat(60));

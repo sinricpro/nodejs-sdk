@@ -54,7 +54,7 @@ async function main() {
         return false;
       }
     }
- 
+
     console.log(`  Unknown setting: ${settingId}`);
     return false;
   });
@@ -75,7 +75,7 @@ async function main() {
   console.log('  Module Settings: Configuration for the module/board itself');
   console.log('    - Registered via: SinricPro.onSetSetting(callback)');
   console.log('    - Examples: WiFi retry count');
-  console.log(''); 
+  console.log('');
 
   console.log('\n' + '='.repeat(60));
   console.log('Current Module Configuration:');
