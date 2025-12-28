@@ -77,7 +77,11 @@ export function RangeController<T extends Constructor<SinricProDevice>>(Base: T)
       if (request.action === 'adjustRangeValue' && this.adjustRangeValueCallback) {
         const rangeValueDelta = request.requestValue.rangeValueDelta;
         const instanceId = request.instance || '';
-        const success = await this.adjustRangeValueCallback(this.getDeviceId(), rangeValueDelta, instanceId);
+        const success = await this.adjustRangeValueCallback(
+          this.getDeviceId(),
+          rangeValueDelta,
+          instanceId
+        );
 
         if (success) {
           request.responseValue.rangeValue = rangeValueDelta;
