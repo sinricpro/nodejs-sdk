@@ -63,11 +63,28 @@ export abstract class SinricProDevice {
     action: string,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     value: Record<string, any>,
-    cause: string = 'PHYSICAL_INTERACTION'
+    cause: string = 'PHYSICAL_INTERACTION',
+    instanceId: string = ''
   ): Promise<boolean> {
     if (!this.sinricPro) {
       SinricProSdkLogger.error('Cannot send event: Device not registered with SinricPro');
       return false;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const payload: Record<string, any> = {
+      action,
+      deviceId: this.deviceId,
+      replyToken: this.generateMessageId(),
+      type: 'event' as MessageType,
+      createdAt: Math.floor(new Date().getTime() / 1000),
+      cause: { type: cause },
+      value,
+    };
+
+    // Include instanceId if provided
+    if (instanceId) {
+      payload.instanceId = instanceId;
     }
 
     const eventMessage = {
@@ -75,15 +92,7 @@ export abstract class SinricProDevice {
         payloadVersion: 2,
         signatureVersion: 1,
       },
-      payload: {
-        action,
-        deviceId: this.deviceId,
-        replyToken: this.generateMessageId(),
-        type: 'event' as MessageType,
-        createdAt: Math.floor(new Date().getTime() / 1000),
-        cause: { type: cause },
-        value,
-      },
+      payload,
     };
 
     try {

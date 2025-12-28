@@ -37,12 +37,12 @@ export function SettingController<T extends Constructor<SinricProDevice>>(Base: 
         return false;
       }
 
-      const setting = request.requestValue.setting;
+      const settingId = request.requestValue.id;
       const value = request.requestValue.value;
-      const success = await this.settingCallback(this.getDeviceId(), setting, value);
+      const success = await this.settingCallback(this.getDeviceId(), settingId, value);
 
       if (success) {
-        request.responseValue.setting = setting;
+        request.responseValue.id = settingId;
         request.responseValue.value = value;
       }
 

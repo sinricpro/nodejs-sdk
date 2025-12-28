@@ -1,6 +1,6 @@
 {
   "name": "sinricpro",
-  "version": "5.0.0",
+  "version": "5.1.0",
   "description": "Official SinricPro SDK for Node.js and TypeScript - Control IoT devices with Alexa and Google Home",
   "main": "dist/index.js",
   "exports": {
@@ -18,14 +18,14 @@
     "lint:fix": "eslint src/**/*.ts --fix",
     "format": "prettier --write \"src/**/*.ts\" \"examples/**/*.ts\" \"test/**/*.ts\"",
     "prepublishOnly": "npm run lint && npm run build && npm test",
-    "example:switch": "ts-node examples/switch/index.ts",
-    "example:light": "ts-node examples/light/index.ts",
-    "example:thermostat": "ts-node examples/thermostat/index.ts",
-    "example:tv": "ts-node examples/tv/index.ts",
-    "example:fan": "ts-node examples/fan/index.ts",
-    "example:lock": "ts-node examples/lock/index.ts",
-    "example:windowac": "ts-node examples/windowac/index.ts",
-    "example:speaker": "ts-node examples/speaker/index.ts"
+    "example:switch": "ts-node --project examples/tsconfig.json examples/switch/index.ts",
+    "example:light": "ts-node --project examples/tsconfig.json examples/light/index.ts",
+    "example:thermostat": "ts-node --project examples/tsconfig.json examples/thermostat/index.ts",
+    "example:tv": "ts-node --project examples/tsconfig.json examples/tv/index.ts",
+    "example:fan": "ts-node --project examples/tsconfig.json examples/fan/index.ts",
+    "example:lock": "ts-node --project examples/tsconfig.json examples/lock/index.ts",
+    "example:windowac": "ts-node --project examples/tsconfig.json examples/windowac/index.ts",
+    "example:speaker": "ts-node --project examples/tsconfig.json examples/speaker/index.ts"
   },
   "keywords": [
     "sinricpro",

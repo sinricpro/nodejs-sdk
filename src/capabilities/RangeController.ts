@@ -1,5 +1,6 @@
 /**
  * RangeController - Adds generic range control capability
+ * Supports optional instanceId for multi-instance range control
  */
 
 import { SinricProDevice } from '../core/SinricProDevice';
@@ -12,18 +13,20 @@ type Constructor<T = object> = new (...args: any[]) => T;
 
 export type RangeValueCallback = (
   deviceId: string,
-  rangeValue: number
+  rangeValue: number,
+  instanceId: string
 ) => Promise<boolean> | boolean;
 
 export type AdjustRangeValueCallback = (
   deviceId: string,
-  rangeValueDelta: number
+  rangeValueDelta: number,
+  instanceId: string
 ) => Promise<boolean> | boolean;
 
 export interface IRangeController {
   onRangeValue(callback: RangeValueCallback): void;
   onAdjustRangeValue(callback: AdjustRangeValueCallback): void;
-  sendRangeValueEvent(rangeValue: number, cause?: string): Promise<boolean>;
+  sendRangeValueEvent(rangeValue: number, instanceId?: string, cause?: string): Promise<boolean>;
 }
 
 export function RangeController<T extends Constructor<SinricProDevice>>(Base: T) {
@@ -48,19 +51,21 @@ export function RangeController<T extends Constructor<SinricProDevice>>(Base: T)
 
     async sendRangeValueEvent(
       rangeValue: number,
+      instanceId: string = '',
       cause: string = PHYSICAL_INTERACTION
     ): Promise<boolean> {
       if (this.rangeEventLimiter.isLimited()) {
         return false;
       }
 
-      return this.sendEvent('setRangeValue', { rangeValue }, cause);
+      return this.sendEvent('setRangeValue', { rangeValue }, cause, instanceId);
     }
 
     private async handleRangeRequest(request: SinricProRequest): Promise<boolean> {
       if (request.action === 'setRangeValue' && this.rangeValueCallback) {
         const rangeValue = request.requestValue.rangeValue;
-        const success = await this.rangeValueCallback(this.getDeviceId(), rangeValue);
+        const instanceId = request.instance || '';
+        const success = await this.rangeValueCallback(this.getDeviceId(), rangeValue, instanceId);
 
         if (success) {
           request.responseValue.rangeValue = rangeValue;
@@ -71,7 +76,8 @@ export function RangeController<T extends Constructor<SinricProDevice>>(Base: T)
 
       if (request.action === 'adjustRangeValue' && this.adjustRangeValueCallback) {
         const rangeValueDelta = request.requestValue.rangeValueDelta;
-        const success = await this.adjustRangeValueCallback(this.getDeviceId(), rangeValueDelta);
+        const instanceId = request.instance || '';
+        const success = await this.adjustRangeValueCallback(this.getDeviceId(), rangeValueDelta, instanceId);
 
         if (success) {
           request.responseValue.rangeValue = rangeValueDelta;

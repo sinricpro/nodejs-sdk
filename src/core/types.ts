@@ -72,6 +72,13 @@ export type ConnectedCallback = () => void;
 export type DisconnectedCallback = () => void;
 export type PongCallback = (latency: number) => void;
 
+// Module-level setting callback: (settingId, value) -> boolean
+export type ModuleSettingCallback = (
+  settingId: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  value: any
+) => Promise<boolean> | boolean;
+
 // Callback result type - supports simple boolean or detailed error response
 export type CallbackResult = boolean | { success: boolean; message?: string };
 

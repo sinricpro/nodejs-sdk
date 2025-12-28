@@ -4,9 +4,13 @@
 
 import { SinricProDevice } from '../core/SinricProDevice';
 import { PowerStateController, IPowerStateController } from '../capabilities/PowerStateController';
+import { SettingController, ISettingController } from '../capabilities/SettingController';
+import { PushNotification, IPushNotification } from '../capabilities/PushNotification';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-class SinricProSwitchClass extends PowerStateController(SinricProDevice as any) {
+class SinricProSwitchClass extends SettingController(
+  PushNotification(PowerStateController(SinricProDevice as any))
+) {
   constructor(deviceId: string) {
     super(deviceId, 'SWITCH');
   }
@@ -18,9 +22,14 @@ class SinricProSwitchClass extends PowerStateController(SinricProDevice as any) 
  * @returns SinricProSwitch instance
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function SinricProSwitch(deviceId: string): SinricProDevice & IPowerStateController {
+export function SinricProSwitch(
+  deviceId: string
+): SinricProDevice & IPowerStateController & IPushNotification & ISettingController {
   return new SinricProSwitchClass(deviceId) as any;
 }
 
 // Export type for TypeScript
-export type SinricProSwitch = SinricProDevice & IPowerStateController;
+export type SinricProSwitch = SinricProDevice &
+  IPowerStateController &
+  IPushNotification &
+  ISettingController;
