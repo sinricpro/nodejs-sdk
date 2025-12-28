@@ -9,7 +9,7 @@
  */
 
 import SinricPro from 'sinricpro';
-import { TemperatureSensor } from 'sinricpro';
+import { SinricProTemperatureSensor } from 'sinricpro';
 import { SinricProSdkLogger, LogLevel } from 'sinricpro';
 
 // Configuration - Replace with your credentials
@@ -26,7 +26,7 @@ async function main() {
   console.log('='.repeat(60));
 
   // Create temperature sensor device
-  const sensor = TemperatureSensor(DEVICE_ID);
+  const sensor = SinricProTemperatureSensor(DEVICE_ID);
 
   // Add device to SinricPro
   SinricPro.add(sensor);

@@ -11,12 +11,9 @@ import { SinricProBlinds } from 'sinricpro';
 import { SinricProSdkLogger, LogLevel } from 'sinricpro';
 
 // Configuration - Replace with your credentials
-const SWITCH_ID = 'YOUR-DEVICE-ID'; // 24-character hex
+const DEVICE_ID = 'YOUR-DEVICE-ID'; // 24-character hex
 const APP_KEY = 'YOUR-APP-KEY'; // UUID format
 const APP_SECRET = 'YOUR-APP-SECRET'; // Long secret key
-
-// Device state
-let powerState = false;
 
 async function main() {
   SinricProSdkLogger.setLevel(LogLevel.ERROR);
@@ -31,7 +28,6 @@ async function main() {
   // Power state callback
   myBlinds.onPowerState(async (deviceId, state) => {
     console.log(`\n[Callback] Device ${deviceId} Power: ${state ? 'ON' : 'OFF'}`);
-    powerState = state;
     return true;
   });
 
