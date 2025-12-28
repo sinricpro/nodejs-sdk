@@ -32,3 +32,6 @@ export * from './SinricProPowerSensor';
 
 // Window treatments
 export * from './SinricProBlinds';
+
+// Custom/Flexible
+export * from './SinricProCustomDevice';
