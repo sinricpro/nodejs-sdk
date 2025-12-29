@@ -26,8 +26,12 @@ export * from './SinricProDoorbell';
 // Sensors
 export * from './SinricProMotionSensor';
 export * from './SinricProContactSensor';
+export * from './SinricProTemperatureSensor';
 export * from './SinricProAirQualitySensor';
 export * from './SinricProPowerSensor';
 
 // Window treatments
 export * from './SinricProBlinds';
+
+// Custom/Flexible
+export * from './SinricProCustomDevice';

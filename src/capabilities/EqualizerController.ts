@@ -30,7 +30,7 @@ export interface IEqualizerController {
   onAdjustBands(callback: AdjustBandsCallback): void;
   onSetMode(callback: SetModeCallback): void;
   sendBandsEvent(bands: EqualizerBands, cause?: string): Promise<boolean>;
-  sendModeEvent(mode: string, cause?: string): Promise<boolean>;
+  sendModeEvent(mode: string, instanceId?: string, cause?: string): Promise<boolean>;
 }
 
 export function EqualizerController<T extends Constructor<SinricProDevice>>(Base: T) {
@@ -69,12 +69,16 @@ export function EqualizerController<T extends Constructor<SinricProDevice>>(Base
       return this.sendEvent('setBands', { bands }, cause);
     }
 
-    async sendModeEvent(mode: string, cause: string = PHYSICAL_INTERACTION): Promise<boolean> {
+    async sendModeEvent(
+      mode: string,
+      instanceId: string = '',
+      cause: string = PHYSICAL_INTERACTION
+    ): Promise<boolean> {
       if (this.equalizerEventLimiter.isLimited()) {
         return false;
       }
 
-      return this.sendEvent('setMode', { mode }, cause);
+      return this.sendEvent('setMode', { mode }, cause, instanceId);
     }
 
     private async handleEqualizerRequest(request: SinricProRequest): Promise<boolean> {
@@ -124,7 +128,8 @@ export function EqualizerController<T extends Constructor<SinricProDevice>>(Base
 
       if (request.action === 'setMode' && this.setModeCallback) {
         const mode = request.requestValue.mode;
-        const result = await this.setModeCallback(this.getDeviceId(), mode);
+        const instanceId = request.instance || '';
+        const result = await this.setModeCallback(this.getDeviceId(), mode, instanceId);
 
         // Handle both boolean and object return types
         let success: boolean;

@@ -16,6 +16,7 @@ import type {
   ConnectedCallback,
   DisconnectedCallback,
   PongCallback,
+  ModuleSettingCallback,
 } from './types';
 import { SINRICPRO_SERVER_URL } from './types';
 
@@ -35,6 +36,7 @@ export class SinricPro extends EventEmitter implements ISinricPro {
   private signature!: Signature;
   private isInitialized: boolean = false;
   private processingInterval: NodeJS.Timeout | null = null;
+  private moduleSettingCallback: ModuleSettingCallback | null = null;
 
   private constructor() {
     super();
@@ -193,6 +195,28 @@ export class SinricPro extends EventEmitter implements ISinricPro {
   }
 
   /**
+   * Register a callback for module-level setting changes
+   *
+   * Module settings are configuration values for the module (dev board) itself,
+   * not for individual devices. Use this to handle settings like WiFi retry count,
+   * logging level, or other module-wide configurations.
+   *
+   * @param callback - Function that receives settingId and value, returns boolean or Promise<boolean>
+   * @example
+   * ```typescript
+   * SinricPro.onSetSetting(async (settingId, value) => {
+   *   if (settingId === 'wifi_retry_count') {
+   *     setWifiRetryCount(value);
+   *   }
+   *   return true;
+   * });
+   * ```
+   */
+  onSetSetting(callback: ModuleSettingCallback): void {
+    this.moduleSettingCallback = callback;
+  }
+
+  /**
    * Stop the SinricPro SDK and disconnect from the server
    * @example
    * ```typescript
@@ -293,7 +317,13 @@ export class SinricPro extends EventEmitter implements ISinricPro {
 
         // Route message
         if (message.payload.type === ('request' as MessageType)) {
-          await this.handleRequest(message);
+          // Check scope to determine if this is a module or device request
+          const scope = message.payload.scope || 'device';
+          if (scope === 'module') {
+            await this.handleModuleRequest(message);
+          } else {
+            await this.handleRequest(message);
+          }
         } else if (message.payload.type === ('response' as MessageType)) {
           this.emit('response', message);
         }
@@ -344,6 +374,63 @@ export class SinricPro extends EventEmitter implements ISinricPro {
     this.sendResponse(message, success, request.responseValue, request.errorMessage);
   }
 
+  private async handleModuleRequest(message: SinricProMessage): Promise<void> {
+    const action = message.payload.action;
+    const requestValue = message.payload.value || {};
+
+    if (action === 'setSetting') {
+      if (!this.moduleSettingCallback) {
+        SinricProSdkLogger.error('No module setting callback registered');
+        this.sendModuleResponse(message, false, {}, 'No module setting callback registered');
+        return;
+      }
+
+      const settingId = requestValue.id || '';
+      const value = requestValue.value;
+
+      try {
+        const success = await this.moduleSettingCallback(settingId, value);
+        const responseValue = success ? { id: settingId, value } : {};
+        this.sendModuleResponse(message, success, responseValue);
+      } catch (error) {
+        SinricProSdkLogger.error('Error in module setting callback:', error);
+        this.sendModuleResponse(message, false, {}, String(error));
+      }
+    } else {
+      SinricProSdkLogger.error(`Unknown module action: ${action}`);
+      this.sendModuleResponse(message, false, {}, `Unknown module action: ${action}`);
+    }
+  }
+
+  private sendModuleResponse(
+    requestMessage: SinricProMessage,
+    success: boolean,
+    value: Record<string, unknown>,
+    errorMessage?: string
+  ): void {
+    // Module response does NOT include deviceId
+    const responseMessage: SinricProMessage = {
+      header: {
+        payloadVersion: 2,
+        signatureVersion: 1,
+      },
+      payload: {
+        action: requestMessage.payload.action,
+        clientId: requestMessage.payload.clientId,
+        createdAt: Math.floor(new Date().getTime() / 1000),
+        message: errorMessage || (success ? 'OK' : 'Request failed'),
+        replyToken: requestMessage.payload.replyToken,
+        scope: 'module',
+        success,
+        type: 'response' as MessageType,
+        value,
+      },
+    };
+
+    this.signature.sign(responseMessage);
+    this.sendQueue.push(JSON.stringify(responseMessage));
+  }
+
   private sendResponse(
     requestMessage: SinricProMessage,
     success: boolean,
@@ -362,6 +449,7 @@ export class SinricPro extends EventEmitter implements ISinricPro {
         deviceId: requestMessage.payload.deviceId,
         message: errorMessage || (success ? 'OK' : 'Request failed'),
         replyToken: requestMessage.payload.replyToken,
+        scope: 'device',
         success,
         type: 'response' as MessageType,
         value,

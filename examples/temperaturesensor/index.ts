@@ -1,51 +1,35 @@
 /**
- * SinricPro Switch Example
+ * SinricPro Temperature Sensor Example
  *
  * This example demonstrates:
  * - Connecting to SinricPro
- * - Creating a switch device
+ * - Creating a temperature device
  * - Handling power state changes
  * - Sending events when state changes locally
  */
 
 import SinricPro from 'sinricpro';
-import { SinricProSwitch } from 'sinricpro';
+import { SinricProTemperatureSensor } from 'sinricpro';
 import { SinricProSdkLogger, LogLevel } from 'sinricpro';
 
 // Configuration - Replace with your credentials
-const SWITCH_ID = 'YOUR-DEVICE-ID'; // 24-character hex
+const DEVICE_ID = 'YOUR-DEVICE-ID'; // 24-character hex
 const APP_KEY = 'YOUR-APP-KEY'; // UUID format
 const APP_SECRET = 'YOUR-APP-SECRET'; // Long secret key
-
-// Simulated device state
-let devicePowerState = false;
 
 async function main() {
   // Enable debug logging
   SinricProSdkLogger.setLevel(LogLevel.ERROR);
 
   console.log('='.repeat(60));
-  console.log('SinricPro Switch Example');
+  console.log('SinricPro Temperature Example');
   console.log('='.repeat(60));
 
-  // Create switch device
-  const mySwitch = SinricProSwitch(SWITCH_ID);
-
-  // Set up power state callback
-  mySwitch.onPowerState(async (deviceId: string, state: boolean) => {
-    console.log(`\n[Callback] Device ${deviceId} turned ${state ? 'ON' : 'OFF'}`);
-
-    // Update local state
-    devicePowerState = state;
-
-    // Here you would control actual hardware
-    // For example: GPIO.write(LED_PIN, state);
-
-    return true; // Return true if successful
-  });
+  // Create temperature sensor device
+  const sensor = SinricProTemperatureSensor(DEVICE_ID);
 
   // Add device to SinricPro
-  SinricPro.add(mySwitch);
+  SinricPro.add(sensor);
 
   // Connection event handlers
   SinricPro.onConnected(() => {
@@ -67,14 +51,21 @@ async function main() {
     appSecret: APP_SECRET,
   });
 
-  // Simulate local button press every 30 seconds
+  // Simulate local button press every 1 minute
   setInterval(async () => {
-    devicePowerState = !devicePowerState;
-    console.log(`\n[Local Event] Button pressed - turning ${devicePowerState ? 'ON' : 'OFF'}`);
-    const success = await mySwitch.sendPowerStateEvent(devicePowerState);
+    // Generate random temperature (20.0 to 40.0°C) and humidity (10.0% to 90.0%)
+    const temperature = parseFloat((20 + Math.random() * 20).toFixed(1)); // e.g., 32.7
+    const humidity = parseFloat((10 + Math.random() * 80).toFixed(1)); // e.g., 64.3
+
+    // Optional: Only send if values changed significantly (uncomment if needed)
+    // const tempChanged = Math.abs(temperature - lastTemperature) >= 0.5;
+    // const humidityChanged = Math.abs(humidity - lastHumidity) >= 1.0;
+    // if (!tempChanged && !humidityChanged) return;
+
+    const success = await sensor.sendTemperatureEvent(temperature, humidity);
 
     if (success) {
-      console.log('  ✓ Event sent to SinricPro server');
+      console.log('  ✓ Temperature Event sent to SinricPro server');
     } else {
       console.log('  ✗ Failed to send event (rate limited or not connected)');
     }

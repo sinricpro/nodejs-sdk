@@ -1,15 +1,15 @@
 /**
- * SinricPro Switch Example
+ * SinricPro Camera Example
  *
  * This example demonstrates:
  * - Connecting to SinricPro
- * - Creating a switch device
+ * - Creating a camera device
  * - Handling power state changes
  * - Sending events when state changes locally
  */
 
 import SinricPro from 'sinricpro';
-import { SinricProSwitch } from 'sinricpro';
+import { SinricProCamera } from 'sinricpro';
 import { SinricProSdkLogger, LogLevel } from 'sinricpro';
 
 // Configuration - Replace with your credentials
@@ -25,14 +25,14 @@ async function main() {
   SinricProSdkLogger.setLevel(LogLevel.ERROR);
 
   console.log('='.repeat(60));
-  console.log('SinricPro Switch Example');
+  console.log('SinricPro Camera Example');
   console.log('='.repeat(60));
 
-  // Create switch device
-  const mySwitch = SinricProSwitch(SWITCH_ID);
+  // Create camera device
+  const myCamera = SinricProCamera(SWITCH_ID);
 
   // Set up power state callback
-  mySwitch.onPowerState(async (deviceId: string, state: boolean) => {
+  myCamera.onPowerState(async (deviceId: string, state: boolean) => {
     console.log(`\n[Callback] Device ${deviceId} turned ${state ? 'ON' : 'OFF'}`);
 
     // Update local state
@@ -45,7 +45,7 @@ async function main() {
   });
 
   // Add device to SinricPro
-  SinricPro.add(mySwitch);
+  SinricPro.add(myCamera);
 
   // Connection event handlers
   SinricPro.onConnected(() => {
@@ -71,7 +71,7 @@ async function main() {
   setInterval(async () => {
     devicePowerState = !devicePowerState;
     console.log(`\n[Local Event] Button pressed - turning ${devicePowerState ? 'ON' : 'OFF'}`);
-    const success = await mySwitch.sendPowerStateEvent(devicePowerState);
+    const success = await myCamera.sendPowerStateEvent(devicePowerState);
 
     if (success) {
       console.log('  ✓ Event sent to SinricPro server');

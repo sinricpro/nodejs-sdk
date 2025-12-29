@@ -59,13 +59,13 @@ async function main() {
   });
 
   // Fan speed control (range 0-100)
-  myAC.onRangeValue(async (deviceId, speed) => {
+  myAC.onRangeValue(async (deviceId, speed, instanceId) => {
     console.log(`\n[Fan Speed] Device ${deviceId} set to ${speed}%`);
     acState.fanSpeed = speed;
     return true;
   });
 
-  myAC.onAdjustRangeValue(async (deviceId, delta) => {
+  myAC.onAdjustRangeValue(async (deviceId, delta, instanceId) => {
     console.log(`\n[Fan Speed] Device ${deviceId} adjust by ${delta > 0 ? '+' : ''}${delta}%`);
     acState.fanSpeed = Math.max(0, Math.min(100, acState.fanSpeed + delta));
     console.log(`  New fan speed: ${acState.fanSpeed}%`);

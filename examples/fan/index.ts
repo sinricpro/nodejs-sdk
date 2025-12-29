@@ -31,7 +31,7 @@ async function main() {
   });
 
   // Speed control (0-100)
-  myFan.onRangeValue(async (deviceId, speed) => {
+  myFan.onRangeValue(async (deviceId, speed, instanceId) => {
     console.log(`\n[Fan Speed] Device ${deviceId} Set to ${speed}%`);
     // Map speed to fan levels: 0=off, 1-33=low, 34-66=medium, 67-100=high
     let level;
@@ -44,7 +44,7 @@ async function main() {
     return true;
   });
 
-  myFan.onAdjustRangeValue(async (deviceId, delta) => {
+  myFan.onAdjustRangeValue(async (deviceId, delta, instanceId) => {
     console.log(`\n[Fan Speed] Device ${deviceId} Adjust by ${delta > 0 ? '+' : ''}${delta}`);
     return true;
   });

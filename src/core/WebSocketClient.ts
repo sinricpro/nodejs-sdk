@@ -4,6 +4,7 @@
 
 import WebSocket from 'ws';
 import { EventEmitter } from 'events';
+import os from 'os';
 import { SinricProSdkLogger } from '../utils/SinricProSdkLogger';
 import {
   SINRICPRO_SERVER_SSL_PORT,
@@ -11,6 +12,29 @@ import {
   WEBSOCKET_PING_TIMEOUT,
 } from './types';
 import { version } from '../../package.json';
+
+/**
+ * Get the MAC address of this machine.
+ * Returns the MAC address of the first non-internal network interface.
+ * @returns MAC address string in format XX:XX:XX:XX:XX:XX
+ */
+function getMacAddress(): string {
+  const interfaces = os.networkInterfaces();
+
+  for (const name of Object.keys(interfaces)) {
+    const netInterfaces = interfaces[name];
+    if (!netInterfaces) continue;
+
+    for (const net of netInterfaces) {
+      // Skip internal and non-MAC interfaces
+      if (!net.internal && net.mac && net.mac !== '00:00:00:00:00:00') {
+        return net.mac.toUpperCase();
+      }
+    }
+  }
+
+  return '00:00:00:00:00:00';
+}
 
 export interface WebSocketConfig {
   serverUrl: string;
@@ -54,6 +78,7 @@ export class WebSocketClient extends EventEmitter {
       deviceids: this.config.deviceIds.join(';'),
       platform: this.config.platform || 'NodeJS',
       SDKVersion: this.config.sdkVersion || version,
+      mac: getMacAddress(),
     };
 
     SinricProSdkLogger.info(`Connecting to ${url}`);
