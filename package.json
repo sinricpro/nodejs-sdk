@@ -25,7 +25,8 @@
     "example:fan": "ts-node --project examples/tsconfig.json examples/fan/index.ts",
     "example:lock": "ts-node --project examples/tsconfig.json examples/lock/index.ts",
     "example:windowac": "ts-node --project examples/tsconfig.json examples/windowac/index.ts",
-    "example:speaker": "ts-node --project examples/tsconfig.json examples/speaker/index.ts"
+    "example:speaker": "ts-node --project examples/tsconfig.json examples/speaker/index.ts",
+    "example:customdevice": "ts-node --project examples/tsconfig.json examples/customdevice/index.ts"
   },
   "keywords": [
     "sinricpro",
