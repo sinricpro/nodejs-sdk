@@ -61,6 +61,14 @@ async function main() {
 
   SinricPro.onConnected(() => {
     console.log('\nConnected to SinricPro!');
+
+    // Example: Send a module setting event to SinricPro
+    // This can be used to report module-level settings changes
+    // setTimeout(async () => {
+    //   console.log('\n[Example] Sending module setting event...');
+    //   const sent = await SinricPro.sendSettingEvent('if_wifiretrycount', 5);
+    //   console.log(`  Module setting event sent: ${sent}`);
+    // }, 5000);
   });
 
   // Initialize SinricPro
@@ -73,8 +81,13 @@ async function main() {
   console.log('Module Settings vs Device Settings:');
   console.log('='.repeat(60));
   console.log('  Module Settings: Configuration for the module/board itself');
-  console.log('    - Registered via: SinricPro.onSetSetting(callback)');
+  console.log('    - Receive via: SinricPro.onSetSetting(callback)');
+  console.log('    - Send via: SinricPro.sendSettingEvent(settingId, value)');
   console.log('    - Examples: WiFi retry count');
+  console.log('');
+  console.log('  Device Settings: Configuration for individual devices');
+  console.log('    - Receive via: device.onSetting(callback)');
+  console.log('    - Send via: device.sendSettingEvent(settingId, value)');
   console.log('');
 
   console.log('\n' + '='.repeat(60));

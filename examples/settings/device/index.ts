@@ -50,6 +50,14 @@ async function main() {
     return false;
   });
 
+  // Example: Send a device setting event to SinricPro
+  // This can be used to report setting changes made locally (e.g., via physical button)
+  // setTimeout(async () => {
+  //   console.log('\n[Example] Sending device setting event...');
+  //   const sent = await myBlinds.sendSettingEvent('id_tilt', 75);
+  //   console.log(`  Setting event sent: ${sent}`);
+  // }, 5000);
+
   // Add device to SinricPro
   SinricPro.add(myBlinds);
 
@@ -67,12 +75,14 @@ async function main() {
   console.log('Device Settings vs Module Settings:');
   console.log('='.repeat(60));
   console.log('  Device Settings: Configuration for THIS specific device');
-  console.log('    - Registered via: device.onSetting(callback)');
+  console.log('    - Receive via: device.onSetting(callback)');
+  console.log('    - Send via: device.sendSettingEvent(settingId, value)');
   console.log('    - Examples: Tilt angle');
   console.log('    - Callback receives: (deviceId, settingId, value)');
   console.log('');
   console.log('  Module Settings: Configuration for the module/board');
-  console.log('    - Registered via: SinricPro.onSetSetting(callback)');
+  console.log('    - Receive via: SinricPro.onSetSetting(callback)');
+  console.log('    - Send via: SinricPro.sendSettingEvent(settingId, value)');
   console.log('    - Examples: WiFi retry count, log level');
 
   console.log('\n' + '='.repeat(60));
