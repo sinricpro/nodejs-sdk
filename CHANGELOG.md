@@ -1,3 +1,7 @@
+## [5.2.0]
+
+feat: Send a device setting event to SinricPro
+
 ## [5.1.0]
 
 feat: Implemented example applications for various device types including Camera, PowerSensor, Device Settings, Module Settings, and Temperature Sensor.

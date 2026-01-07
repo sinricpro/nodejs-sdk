@@ -1,6 +1,6 @@
 {
   "name": "sinricpro",
-  "version": "5.1.0",
+  "version": "5.2.0",
   "description": "Official SinricPro SDK for Node.js and TypeScript - Control IoT devices with Alexa and Google Home",
   "main": "dist/index.js",
   "exports": {

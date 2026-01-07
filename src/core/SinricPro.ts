@@ -18,7 +18,8 @@ import type {
   PongCallback,
   ModuleSettingCallback,
 } from './types';
-import { SINRICPRO_SERVER_URL } from './types';
+import { SINRICPRO_SERVER_URL, EVENT_LIMIT_STATE, PHYSICAL_INTERACTION } from './types';
+import { EventLimiter } from './EventLimiter';
 
 // Internal config type with serverUrl
 interface InternalConfig extends Required<SinricProConfig> {
@@ -37,6 +38,7 @@ export class SinricPro extends EventEmitter implements ISinricPro {
   private isInitialized: boolean = false;
   private processingInterval: NodeJS.Timeout | null = null;
   private moduleSettingCallback: ModuleSettingCallback | null = null;
+  private settingEventLimiter: EventLimiter = new EventLimiter(EVENT_LIMIT_STATE);
 
   private constructor() {
     super();
@@ -214,6 +216,67 @@ export class SinricPro extends EventEmitter implements ISinricPro {
    */
   onSetSetting(callback: ModuleSettingCallback): void {
     this.moduleSettingCallback = callback;
+  }
+
+  /**
+   * Send a module-level setting event to SinricPro server
+   *
+   * Module settings are configuration values for the module (dev board) itself.
+   * Use this to report setting changes like WiFi configuration, logging level,
+   * or other module-wide settings.
+   *
+   * @param settingId - The setting identifier
+   * @param value - The setting value (can be any JSON-serializable type)
+   * @param cause - (optional) Reason for the event (default: 'PHYSICAL_INTERACTION')
+   * @returns Promise<boolean> - true if event was sent, false if rate limited
+   * @example
+   * ```typescript
+   * await SinricPro.sendSettingEvent('wifi_retry_count', 5);
+   * await SinricPro.sendSettingEvent('debug_mode', true);
+   * ```
+   */
+  async sendSettingEvent(
+    settingId: string,
+    value: unknown,
+    cause: string = PHYSICAL_INTERACTION
+  ): Promise<boolean> {
+    if (this.settingEventLimiter.isLimited()) {
+      return false;
+    }
+
+    if (!this.isConnected()) {
+      SinricProSdkLogger.error('Cannot send setting event: Not connected to SinricPro');
+      return false;
+    }
+
+    const eventMessage: SinricProMessage = {
+      header: {
+        payloadVersion: 2,
+        signatureVersion: 1,
+      },
+      payload: {
+        action: 'setSetting',
+        replyToken: this.generateMessageId(),
+        type: 'event' as MessageType,
+        createdAt: this.getTimestamp(),
+        cause: { type: cause },
+        scope: 'module',
+        value: { id: settingId, value },
+      },
+    };
+
+    try {
+      await this.sendMessage(eventMessage);
+      SinricProSdkLogger.debug(`Module setting event sent: ${settingId}`, value);
+      return true;
+    } catch (error) {
+      SinricProSdkLogger.error(`Failed to send module setting event ${settingId}:`, error);
+      return false;
+    }
+  }
+
+  private generateMessageId(): string {
+    return `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
   }
 
   /**
