@@ -10,6 +10,7 @@ Official SinricPro SDK for Node.js and TypeScript. Control your IoT devices with
 - ✅ Modern async/await API
 - ✅ WebSocket with automatic reconnection
 - ✅ HMAC-SHA256 authentication
+- ✅ Local control over the LAN (works while SinricPro is unreachable)
 - ✅ Event rate limiting
 - ✅ Multiple device types (Switch, Light, Thermostat, etc.)
 - ✅ Comprehensive error handling
@@ -92,6 +93,48 @@ ts-node app.ts
 
 - "Alexa, turn on Switch"
 - "OK Google, turn off Switch"
+
+---
+
+## 🏠 Local Control
+
+Devices also answer signed commands over the local network, so they keep working
+while SinricPro is unreachable. It is on by default and needs no application
+changes: a LAN request runs the same callbacks as a cloud request. UDP listener on port `3333`, joined to multicast group `224.9.9.9` and answering unicast on the same port. Replies go back to the peer that sent the request, never to the cloud websocket.
+
+The mDNS announcement uses `bonjour-service`, installed with the SDK:
+
+```bash
+npm install sinricpro
+```
+
+---
+
+## Troubleshooting
+
+### Connection Issues
+
+1. **Check credentials** - Ensure APP_KEY and APP_SECRET are correct
+2. **Check device ID** - Verify the device ID is exactly 24 hexadecimal characters
+3. **Check network** - Ensure you have internet connectivity
+4. **Enable debug logging** -
+
+```js
+import { SinricProSdkLogger, LogLevel } from 'sinricpro';
+SinricProSdkLogger.setLevel(LogLevel.DEBUG); // DEBUG, INFO, WARN, ERROR, NONE
+```
+
+
+### Local Control Issues
+
+1. **No device found on the LAN** - check the log for
+   `Local control listening on UDP 3333`. A failed multicast join leaves nothing
+   listening, and the log line says so.
+2. **No mDNS record** - install the extra: `pip install sinricpro[mdns]`.
+3. **Discovery answers on the wrong network** - set `local_control_interface` to the
+   LAN address of the host.
+4. **Android clients need a `WifiManager.MulticastLock`**, and iOS clients need
+   `_sinricpro._udp` listed in `NSBonjourServices`, or discovery returns nothing.
 
 ---
 
