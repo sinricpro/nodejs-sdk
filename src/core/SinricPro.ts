@@ -515,6 +515,16 @@ export class SinricPro extends EventEmitter implements ISinricPro {
     const device = deviceId ? this.devices.get(deviceId) : null;
 
     if (!device) {
+      // A LAN request for someone else's device is not ours to answer. Every
+      // device on an account shares one app secret, so a reply here is
+      // indistinguishable from the real owner's and would send a discovering
+      // client to the wrong address. The cloud only ever addresses devices we
+      // registered, so it still gets an answer.
+      if (origin.transport === InterfaceType.UDP) {
+        SinricProSdkLogger.debug(`Ignoring LAN request for unknown device: ${deviceId}`);
+        return;
+      }
+
       SinricProSdkLogger.error(`Device not found: ${deviceId}`);
       this.sendErrorResponse(message, `Device ${deviceId} not found`, origin);
       return;
