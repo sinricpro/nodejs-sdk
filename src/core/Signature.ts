@@ -2,8 +2,11 @@
  * HMAC-SHA256 signature implementation for SinricPro authentication
  */
 
-import { createHmac } from 'crypto';
+import { createHmac, timingSafeEqual } from 'crypto';
 import type { SinricProMessage } from './types';
+
+const PAYLOAD_MARKER = '"payload":';
+const SIGNATURE_MARKER = ',"signature"';
 
 export class Signature {
   private appSecret: string;
@@ -17,19 +20,23 @@ export class Signature {
    */
   private hmacBase64(message: string, key: string): string {
     const hmac = createHmac('sha256', key);
-    hmac.update(message);
+    hmac.update(message, 'utf8');
     return hmac.digest('base64');
   }
 
   /**
-   * Extract payload from JSON message string
+   * Extract the payload from a message exactly as it was received.
+   *
+   * The bytes between `"payload":` and `,"signature"` are taken verbatim: the
+   * sender's key order and spacing are its own and re-encoding a parsed object
+   * would produce a different byte string and a failed verification.
    */
   private extractPayload(messageStr: string): string {
-    const beginPayload = messageStr.indexOf('"payload":');
-    const endPayload = messageStr.indexOf(',"signature"', beginPayload);
+    const beginPayload = messageStr.indexOf(PAYLOAD_MARKER);
+    const endPayload = messageStr.indexOf(SIGNATURE_MARKER, beginPayload);
 
     if (beginPayload > 0 && endPayload > 0) {
-      return messageStr.substring(beginPayload + 10, endPayload);
+      return messageStr.substring(beginPayload + PAYLOAD_MARKER.length, endPayload);
     }
 
     return '';
@@ -44,11 +51,10 @@ export class Signature {
   }
 
   /**
-   * Sign a message object
+   * Sign a message object in place.
    */
   sign(message: SinricProMessage): void {
-    const payloadStr = JSON.stringify(message.payload);
-    const signature = this.calculateSignature(payloadStr);
+    const signature = this.calculateSignature(JSON.stringify(message.payload));
 
     if (!message.signature) {
       message.signature = { HMAC: '' };
@@ -57,22 +63,54 @@ export class Signature {
   }
 
   /**
-   * Validate message signature
+   * Sign a message and return the exact bytes to transmit.
+   *
+   * The payload is serialised once and spliced into the envelope, so the HMAC
+   * always covers the bytes that go on the wire. Serialising it a second time
+   * for transmission is what silently breaks verification on the peer.
    */
-  validate(message: SinricProMessage): boolean {
-    // Timestamp messages don't have signatures
-    if ('timestamp' in message) {
-      return true;
-    }
+  serialize(message: SinricProMessage): string {
+    const payloadStr = JSON.stringify(message.payload);
+    const hmac = this.calculateSignature(payloadStr);
 
-    if (!message.signature || !message.signature.HMAC) {
+    message.signature = { HMAC: hmac };
+
+    return (
+      `{"header":${JSON.stringify(message.header)},` +
+      `"payload":${payloadStr},` +
+      `"signature":{"HMAC":${JSON.stringify(hmac)}}}`
+    );
+  }
+
+  /**
+   * Validate the signature of a message as it arrived on the wire.
+   *
+   * @param rawMessage - the received bytes, not a re-encoded object
+   */
+  validate(rawMessage: string): boolean {
+    const payload = this.extractPayload(rawMessage);
+    if (!payload) return false;
+
+    let claimedSignature = '';
+    try {
+      const parsed = JSON.parse(rawMessage) as SinricProMessage;
+      claimedSignature = parsed?.signature?.HMAC ?? '';
+    } catch {
       return false;
     }
 
-    const messageStr = JSON.stringify(message);
-    const payload = this.extractPayload(messageStr);
-    const calculatedSignature = this.calculateSignature(payload);
+    if (!claimedSignature) return false;
 
-    return calculatedSignature === message.signature.HMAC;
+    return Signature.constantTimeEquals(this.calculateSignature(payload), claimedSignature);
+  }
+
+  /** timingSafeEqual throws on unequal lengths; a length mismatch is never a match anyway. */
+  private static constantTimeEquals(a: string, b: string): boolean {
+    const bufferA = Buffer.from(a, 'utf8');
+    const bufferB = Buffer.from(b, 'utf8');
+
+    if (bufferA.length !== bufferB.length) return false;
+
+    return timingSafeEqual(bufferA, bufferB);
   }
 }

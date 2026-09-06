@@ -6,6 +6,10 @@ export interface SinricProConfig {
   appKey: string;
   appSecret: string;
   debug?: boolean;
+  /** Answer signed commands over the LAN (UDP 3333). Default: true. */
+  localControl?: boolean;
+  /** Announce the device over mDNS so apps can discover it. Ignored when localControl is false. Default: true. */
+  mdns?: boolean;
 }
 
 export interface DeviceConfig {
@@ -22,6 +26,30 @@ export enum MessageType {
 export enum InterfaceType {
   WebSocket = 'websocket',
   UDP = 'udp',
+}
+
+export interface WebSocketOrigin {
+  transport: InterfaceType.WebSocket;
+}
+
+export interface UdpOrigin {
+  transport: InterfaceType.UDP;
+  address: string;
+  port: number;
+}
+
+/** Where a message came from, and therefore where its response must go back to. */
+export type MessageOrigin = WebSocketOrigin | UdpOrigin;
+
+export const WEBSOCKET_ORIGIN: WebSocketOrigin = { transport: InterfaceType.WebSocket };
+
+/**
+ * A queued message keeps its own origin. A response can be sent several loop
+ * iterations after it was queued, by which time another peer may have written.
+ */
+export interface QueuedMessage {
+  message: string;
+  origin: MessageOrigin;
 }
 
 export interface MessageHeader {
@@ -124,6 +152,14 @@ export const WEBSOCKET_PING_INTERVAL = 300000; // 5 minutes
 export const WEBSOCKET_PING_TIMEOUT = 10000; // 10 seconds
 export const EVENT_LIMIT_STATE = 1000; // 1 second
 export const EVENT_LIMIT_SENSOR_VALUE = 60000; // 60 seconds
+
+// Local control (LAN) configuration - must match the other SinricPro SDKs
+export const UDP_MULTICAST_ADDRESS = '224.9.9.9';
+export const UDP_MULTICAST_PORT = 3333;
+export const MDNS_SERVICE_TYPE = 'sinricpro';
+export const MDNS_SERVICE_PROTOCOL = 'udp';
+/** Websocket messages queued while offline are capped so an unreachable cloud cannot exhaust memory. */
+export const MAX_QUEUED_WEBSOCKET_MESSAGES = 100;
 
 export const PHYSICAL_INTERACTION = 'PHYSICAL_INTERACTION';
 export const APP_INTERACTION = 'APP_INTERACTION';

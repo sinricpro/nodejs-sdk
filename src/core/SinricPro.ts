@@ -8,17 +8,29 @@ import { MessageQueue } from './MessageQueue';
 import { Signature } from './Signature';
 import { SinricProDevice, ISinricPro } from './SinricProDevice';
 import { SinricProSdkLogger, LogLevel } from '../utils/SinricProSdkLogger';
+import { UdpListener } from './local/UdpListener';
+import { MdnsAnnouncer } from './local/MdnsAnnouncer';
 import type {
   SinricProConfig,
   SinricProMessage,
   SinricProRequest,
   MessageType,
+  MessageOrigin,
+  QueuedMessage,
+  UdpOrigin,
   ConnectedCallback,
   DisconnectedCallback,
   PongCallback,
   ModuleSettingCallback,
 } from './types';
-import { SINRICPRO_SERVER_URL, EVENT_LIMIT_STATE, PHYSICAL_INTERACTION } from './types';
+import {
+  SINRICPRO_SERVER_URL,
+  EVENT_LIMIT_STATE,
+  PHYSICAL_INTERACTION,
+  InterfaceType,
+  WEBSOCKET_ORIGIN,
+  MAX_QUEUED_WEBSOCKET_MESSAGES,
+} from './types';
 import { EventLimiter } from './EventLimiter';
 
 // Internal config type with serverUrl
@@ -39,6 +51,8 @@ export class SinricPro extends EventEmitter implements ISinricPro {
   private processingInterval: NodeJS.Timeout | null = null;
   private moduleSettingCallback: ModuleSettingCallback | null = null;
   private settingEventLimiter: EventLimiter = new EventLimiter(EVENT_LIMIT_STATE);
+  private udpListener: UdpListener | null = null;
+  private mdnsAnnouncer: MdnsAnnouncer | null = null;
 
   private constructor() {
     super();
@@ -62,7 +76,10 @@ export class SinricPro extends EventEmitter implements ISinricPro {
    * Initialize and connect to SinricPro service
    * @param config - Configuration object containing appKey, appSecret, and optional settings
    * @throws {Error} If appKey or appSecret are missing or invalid
-   * @throws {Error} If connection to SinricPro server fails
+   *
+   * A cloud connection failure is not fatal: the SDK stays up, retries in the
+   * background, and keeps answering local control. Call isConnected() to check
+   * cloud state.
    * @example
    * ```typescript
    * await SinricPro.begin({
@@ -84,6 +101,8 @@ export class SinricPro extends EventEmitter implements ISinricPro {
     this.config = {
       serverUrl: SINRICPRO_SERVER_URL,
       debug: false,
+      localControl: process.env.SINRICPRO_NO_LOCAL_CONTROL !== '1',
+      mdns: process.env.SINRICPRO_NOMDNS !== '1',
       ...config,
     };
 
@@ -105,15 +124,52 @@ export class SinricPro extends EventEmitter implements ISinricPro {
 
     this.setupWebSocketHandlers();
 
+    // Local control is brought up before the cloud on purpose: a host that has
+    // never reached SinricPro must still answer signed LAN requests.
+    await this.startLocalControl();
+
+    this.isInitialized = true;
+    this.startMessageProcessor();
+
     try {
       await this.websocket.connect();
-      this.isInitialized = true;
-      this.startMessageProcessor();
-      SinricProSdkLogger.info('SinricPro SDK initialized successfully');
     } catch (error) {
-      SinricProSdkLogger.error('Failed to initialize SinricPro:', error);
-      throw error;
+      // Transport failure is never fatal -- the socket's close handler arms the
+      // reconnect timer and local control already answers. Only invalid
+      // configuration throws, and validateConfig() has done so above.
+      const reason = error instanceof Error ? error.message : String(error);
+      SinricProSdkLogger.warn(`Cloud connection failed (${reason}); will keep retrying`);
     }
+
+    SinricProSdkLogger.info('SinricPro SDK initialized successfully');
+  }
+
+  private async startLocalControl(): Promise<void> {
+    if (!this.config.localControl) {
+      SinricProSdkLogger.info('Local control disabled by configuration');
+      return;
+    }
+
+    this.udpListener = new UdpListener();
+    this.udpListener.on('message', (message: string, origin: UdpOrigin) => {
+      this.receiveQueue.push({ message, origin });
+    });
+
+    try {
+      await this.udpListener.start();
+    } catch {
+      // Already logged by the listener; the cloud path is unaffected.
+      this.udpListener = null;
+      return;
+    }
+
+    if (!this.config.mdns) {
+      SinricProSdkLogger.info('mDNS announcement disabled by configuration');
+      return;
+    }
+
+    this.mdnsAnnouncer = new MdnsAnnouncer();
+    this.mdnsAnnouncer.start(Array.from(this.devices.keys()));
   }
 
   /**
@@ -152,6 +208,8 @@ export class SinricPro extends EventEmitter implements ISinricPro {
     // Update WebSocket device list if already connected
     if (this.isInitialized) {
       this.websocket.updateDeviceList(Array.from(this.devices.keys()));
+      // Re-announce only because the device list changed.
+      this.mdnsAnnouncer?.update(Array.from(this.devices.keys()));
     }
 
     return device;
@@ -295,6 +353,11 @@ export class SinricPro extends EventEmitter implements ISinricPro {
       this.processingInterval = null;
     }
 
+    this.mdnsAnnouncer?.stop();
+    this.mdnsAnnouncer = null;
+    this.udpListener?.stop();
+    this.udpListener = null;
+
     await this.websocket.disconnect();
     this.receiveQueue.clear();
     this.sendQueue.clear();
@@ -313,8 +376,7 @@ export class SinricPro extends EventEmitter implements ISinricPro {
   // ISinricPro interface methods
   async sendMessage(message: SinricProMessage): Promise<void> {
     message.payload.createdAt = this.getTimestamp();
-    this.signature.sign(message);
-    this.sendQueue.push(JSON.stringify(message));
+    this.sendQueue.push({ message: this.signature.serialize(message), origin: WEBSOCKET_ORIGIN });
   }
 
   getTimestamp(): number {
@@ -338,7 +400,7 @@ export class SinricPro extends EventEmitter implements ISinricPro {
     });
 
     this.websocket.on('message', (msg: string) => {
-      this.receiveQueue.push(msg);
+      this.receiveQueue.push({ message: msg, origin: WEBSOCKET_ORIGIN });
     });
 
     this.websocket.on('pong', (latency: number) => {
@@ -347,7 +409,9 @@ export class SinricPro extends EventEmitter implements ISinricPro {
 
     this.websocket.on('error', (error: Error) => {
       SinricProSdkLogger.error('WebSocket error:', error);
-      this.emit('error', error);
+      // EventEmitter throws on an unhandled 'error' event; a cloud outage must
+      // not take down a process that is still serving local control.
+      if (this.listenerCount('error') > 0) this.emit('error', error);
     });
   }
 
@@ -360,8 +424,10 @@ export class SinricPro extends EventEmitter implements ISinricPro {
 
   private async processReceiveQueue(): Promise<void> {
     while (!this.receiveQueue.isEmpty()) {
-      const rawMessage = this.receiveQueue.pop();
-      if (!rawMessage) continue;
+      const entry = this.receiveQueue.pop();
+      if (!entry) continue;
+
+      const { message: rawMessage, origin } = entry;
 
       try {
         const message: SinricProMessage = JSON.parse(rawMessage);
@@ -371,10 +437,10 @@ export class SinricPro extends EventEmitter implements ISinricPro {
           continue;
         }
 
-        // Validate signature
-        if (!this.signature.validate(message)) {
+        // Verified against the received bytes, never a re-encoded object.
+        if (!this.signature.validate(rawMessage)) {
           SinricProSdkLogger.error('Invalid message signature');
-          this.sendInvalidSignatureResponse(message);
+          this.sendInvalidSignatureResponse(message, origin);
           continue;
         }
 
@@ -383,9 +449,9 @@ export class SinricPro extends EventEmitter implements ISinricPro {
           // Check scope to determine if this is a module or device request
           const scope = message.payload.scope || 'device';
           if (scope === 'module') {
-            await this.handleModuleRequest(message);
+            await this.handleModuleRequest(message, origin);
           } else {
-            await this.handleRequest(message);
+            await this.handleRequest(message, origin);
           }
         } else if (message.payload.type === ('response' as MessageType)) {
           this.emit('response', message);
@@ -396,33 +462,71 @@ export class SinricPro extends EventEmitter implements ISinricPro {
     }
   }
 
+  /**
+   * Route each queued message by its own origin.
+   *
+   * The queue as a whole is never gated on the cloud - a UDP reply must go out
+   * even when the websocket has never connected.
+   */
   private processSendQueue(): void {
-    if (!this.isConnected()) {
-      return;
-    }
+    const deferred: QueuedMessage[] = [];
 
     while (!this.sendQueue.isEmpty()) {
-      const message = this.sendQueue.pop();
-      if (message) {
-        try {
-          this.websocket.send(message);
-        } catch (error) {
-          // If send fails, put message back in queue and stop processing
-          this.sendQueue.push(message);
-          SinricProSdkLogger.error('Failed to send message, will retry later:', error);
-          break;
-        }
+      const entry = this.sendQueue.pop();
+      if (!entry) continue;
+
+      if (entry.origin.transport === InterfaceType.UDP) {
+        this.udpListener?.send(entry.message, entry.origin.address, entry.origin.port);
+        continue;
       }
+
+      if (!this.isConnected()) {
+        deferred.push(entry);
+        continue;
+      }
+
+      try {
+        this.websocket.send(entry.message);
+      } catch (error) {
+        SinricProSdkLogger.error('Failed to send message, will retry later:', error);
+        deferred.push(entry);
+        break;
+      }
+    }
+
+    if (deferred.length === 0) return;
+
+    // An unreachable cloud must not grow the queue without bound.
+    const dropped = Math.max(0, deferred.length - MAX_QUEUED_WEBSOCKET_MESSAGES);
+    if (dropped > 0) {
+      SinricProSdkLogger.warn(
+        `Dropping ${dropped} websocket message(s): offline backlog exceeded ` +
+          `${MAX_QUEUED_WEBSOCKET_MESSAGES}`
+      );
+    }
+
+    for (const entry of deferred.slice(dropped).reverse()) {
+      this.sendQueue.pushFront(entry);
     }
   }
 
-  private async handleRequest(message: SinricProMessage): Promise<void> {
+  private async handleRequest(message: SinricProMessage, origin: MessageOrigin): Promise<void> {
     const deviceId = message.payload.deviceId;
     const device = deviceId ? this.devices.get(deviceId) : null;
 
     if (!device) {
+      // A LAN request for someone else's device is not ours to answer. Every
+      // device on an account shares one app secret, so a reply here is
+      // indistinguishable from the real owner's and would send a discovering
+      // client to the wrong address. The cloud only ever addresses devices we
+      // registered, so it still gets an answer.
+      if (origin.transport === InterfaceType.UDP) {
+        SinricProSdkLogger.debug(`Ignoring LAN request for unknown device: ${deviceId}`);
+        return;
+      }
+
       SinricProSdkLogger.error(`Device not found: ${deviceId}`);
-      this.sendErrorResponse(message, `Device ${deviceId} not found`);
+      this.sendErrorResponse(message, `Device ${deviceId} not found`, origin);
       return;
     }
 
@@ -434,17 +538,26 @@ export class SinricPro extends EventEmitter implements ISinricPro {
     };
 
     const success = await device.handleRequest(request);
-    this.sendResponse(message, success, request.responseValue, request.errorMessage);
+    this.sendResponse(message, success, request.responseValue, origin, request.errorMessage);
   }
 
-  private async handleModuleRequest(message: SinricProMessage): Promise<void> {
+  private async handleModuleRequest(
+    message: SinricProMessage,
+    origin: MessageOrigin
+  ): Promise<void> {
     const action = message.payload.action;
     const requestValue = message.payload.value || {};
 
     if (action === 'setSetting') {
       if (!this.moduleSettingCallback) {
         SinricProSdkLogger.error('No module setting callback registered');
-        this.sendModuleResponse(message, false, {}, 'No module setting callback registered');
+        this.sendModuleResponse(
+          message,
+          false,
+          {},
+          origin,
+          'No module setting callback registered'
+        );
         return;
       }
 
@@ -454,14 +567,14 @@ export class SinricPro extends EventEmitter implements ISinricPro {
       try {
         const success = await this.moduleSettingCallback(settingId, value);
         const responseValue = success ? { id: settingId, value } : {};
-        this.sendModuleResponse(message, success, responseValue);
+        this.sendModuleResponse(message, success, responseValue, origin);
       } catch (error) {
         SinricProSdkLogger.error('Error in module setting callback:', error);
-        this.sendModuleResponse(message, false, {}, String(error));
+        this.sendModuleResponse(message, false, {}, origin, String(error));
       }
     } else {
       SinricProSdkLogger.error(`Unknown module action: ${action}`);
-      this.sendModuleResponse(message, false, {}, `Unknown module action: ${action}`);
+      this.sendModuleResponse(message, false, {}, origin, `Unknown module action: ${action}`);
     }
   }
 
@@ -469,6 +582,7 @@ export class SinricPro extends EventEmitter implements ISinricPro {
     requestMessage: SinricProMessage,
     success: boolean,
     value: Record<string, unknown>,
+    origin: MessageOrigin,
     errorMessage?: string
   ): void {
     // Module response does NOT include deviceId
@@ -490,14 +604,14 @@ export class SinricPro extends EventEmitter implements ISinricPro {
       },
     };
 
-    this.signature.sign(responseMessage);
-    this.sendQueue.push(JSON.stringify(responseMessage));
+    this.sendQueue.push({ message: this.signature.serialize(responseMessage), origin });
   }
 
   private sendResponse(
     requestMessage: SinricProMessage,
     success: boolean,
     value: Record<string, unknown>,
+    origin: MessageOrigin,
     errorMessage?: string
   ): void {
     const responseMessage: SinricProMessage = {
@@ -519,13 +633,12 @@ export class SinricPro extends EventEmitter implements ISinricPro {
       },
     };
 
-    this.signature.sign(responseMessage);
-
+    // instanceId belongs to the payload, so it has to be set before signing.
     if (requestMessage.payload.instanceId) {
       responseMessage.payload.instanceId = requestMessage.payload.instanceId;
     }
 
-    this.sendQueue.push(JSON.stringify(responseMessage));
+    this.sendQueue.push({ message: this.signature.serialize(responseMessage), origin });
   }
 
   private validateConfig(config: SinricProConfig): void {
@@ -548,12 +661,20 @@ export class SinricPro extends EventEmitter implements ISinricPro {
     }
   }
 
-  private sendErrorResponse(message: SinricProMessage, errorMessage: string): void {
-    this.sendResponse(message, false, { error: errorMessage });
+  private sendErrorResponse(
+    message: SinricProMessage,
+    errorMessage: string,
+    origin: MessageOrigin
+  ): void {
+    this.sendResponse(message, false, { error: errorMessage }, origin);
   }
 
-  private sendInvalidSignatureResponse(message: SinricProMessage): void {
-    this.sendErrorResponse(message, 'Invalid signature');
+  /**
+   * A request that fails verification is answered rather than dropped, so a
+   * client can tell a wrong app secret from an unreachable device.
+   */
+  private sendInvalidSignatureResponse(message: SinricProMessage, origin: MessageOrigin): void {
+    this.sendResponse(message, false, {}, origin, 'Signature is invalid');
   }
 }
 

@@ -2,14 +2,21 @@
  * Simple message queue implementation
  */
 
-export class MessageQueue {
-  private queue: string[] = [];
+import type { QueuedMessage } from './types';
 
-  push(message: string): void {
-    this.queue.push(message);
+export class MessageQueue {
+  private queue: QueuedMessage[] = [];
+
+  push(entry: QueuedMessage): void {
+    this.queue.push(entry);
   }
 
-  pop(): string | undefined {
+  /** Put an entry back at the head, preserving delivery order when a send is deferred. */
+  pushFront(entry: QueuedMessage): void {
+    this.queue.unshift(entry);
+  }
+
+  pop(): QueuedMessage | undefined {
     return this.queue.shift();
   }
 
