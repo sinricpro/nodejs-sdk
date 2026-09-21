@@ -1,6 +1,8 @@
-## [6.0.0]
+## [6.1.0]
 
-fix: `onAdjustVolume` now receives the relative delta from the request's `volume` field instead of the nonexistent `volumeDelta` field. Its optional third argument exposes `volumeDefault` when supplied. Absolute `setVolume` requests continue to use `onVolume(deviceId, volume)`. `onAdjustVolume` can now return `{ success, volume }` to report the volume after the adjustment, which SinricPro stores as the device's absolute level; returning a plain boolean still echoes the delta.
+fix: `onAdjustVolume` now receives the relative delta from the request's `volume` field instead of the nonexistent `volumeDelta` field, and its optional third argument exposes `volumeDefault` when supplied. It can also return `{ success, volume }` to report the volume after the adjustment, which SinricPro stores as the device's absolute level; returning a plain boolean still echoes the delta. Absolute `setVolume` requests continue to use `onVolume(deviceId, volume)`.
+
+## [6.0.0]
 
 feat: Local control - devices answer signed commands over the LAN, so they keep working while SinricPro is unreachable.
 
