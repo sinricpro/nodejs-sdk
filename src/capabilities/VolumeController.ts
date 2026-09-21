@@ -15,11 +15,18 @@ export type VolumeCallback = (
   volume: number
 ) => Promise<CallbackResult> | CallbackResult;
 
+/**
+ * Superset of CallbackResult: `volume` reports the device's volume after the
+ * adjustment. Omitting it echoes the delta back, which the server would then
+ * store as the absolute level.
+ */
+export type AdjustVolumeResult = boolean | { success: boolean; message?: string; volume?: number };
+
 export type AdjustVolumeCallback = (
   deviceId: string,
   volumeDelta: number,
   volumeDefault?: boolean
-) => Promise<CallbackResult> | CallbackResult;
+) => Promise<AdjustVolumeResult> | AdjustVolumeResult;
 
 export interface IVolumeController {
   /** Handle setVolume requests with an absolute volume. */
@@ -91,6 +98,10 @@ export function VolumeController<T extends Constructor<SinricProDevice>>(Base: T
 
         // Handle both boolean and object return types
         let success: boolean;
+        // The server stores the response volume as the device's absolute level, so
+        // report the adjusted volume when the callback supplies one.
+        let volume = volumeDelta;
+
         if (typeof result === 'boolean') {
           success = result;
         } else {
@@ -98,10 +109,13 @@ export function VolumeController<T extends Constructor<SinricProDevice>>(Base: T
           if (result.message) {
             request.errorMessage = result.message;
           }
+          if (result.volume !== undefined) {
+            volume = result.volume;
+          }
         }
 
         if (success) {
-          request.responseValue.volume = volumeDelta;
+          request.responseValue.volume = volume;
         }
 
         return success;

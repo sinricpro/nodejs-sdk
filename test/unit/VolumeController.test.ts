@@ -36,7 +36,7 @@ describe.each([
     let currentVolume = 50;
     const relative = jest.fn(async (_deviceId: string, volumeDelta: number) => {
       currentVolume += volumeDelta;
-      return { success: true };
+      return { success: true, volume: currentVolume };
     });
     device.onVolume(absolute);
     device.onAdjustVolume(relative);
@@ -47,7 +47,36 @@ describe.each([
     expect(relative).toHaveBeenCalledWith('test-device', delta, false);
     expect(currentVolume).toBe(50 + delta);
     expect(absolute).not.toHaveBeenCalled();
+    // The server stores this as the device's absolute level, not the delta.
+    expect(request.responseValue).toEqual({ volume: 50 + delta });
+  });
+
+  it.each([-5, 0, 5])('echoes the %s delta when no volume is reported', async (delta) => {
+    const device = createDevice('test-device');
+    const request = volumeRequest('adjustVolume', delta, false);
+    device.onAdjustVolume(() => true);
+
+    expect(await device.handleRequest(request)).toBe(true);
     expect(request.responseValue).toEqual({ volume: delta });
+  });
+
+  it('reports volume 0 rather than falling back to the delta', async () => {
+    const device = createDevice('test-device');
+    const request = volumeRequest('adjustVolume', -50, false);
+    device.onAdjustVolume(() => ({ success: true, volume: 0 }));
+
+    expect(await device.handleRequest(request)).toBe(true);
+    expect(request.responseValue).toEqual({ volume: 0 });
+  });
+
+  it('ignores a reported volume when the callback fails', async () => {
+    const device = createDevice('test-device');
+    const request = volumeRequest('adjustVolume', 5, false);
+    device.onAdjustVolume(() => ({ success: false, message: 'Amp offline', volume: 55 }));
+
+    expect(await device.handleRequest(request)).toBe(false);
+    expect(request.errorMessage).toBe('Amp offline');
+    expect(request.responseValue).toEqual({});
   });
 
   it.each([true, false, undefined])('preserves volumeDefault=%s', async (volumeDefault) => {
