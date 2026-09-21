@@ -15,13 +15,23 @@ export type VolumeCallback = (
   volume: number
 ) => Promise<CallbackResult> | CallbackResult;
 
+/**
+ * Superset of CallbackResult: `volume` reports the device's volume after the
+ * adjustment. Omitting it echoes the delta back, which the server would then
+ * store as the absolute level.
+ */
+export type AdjustVolumeResult = boolean | { success: boolean; message?: string; volume?: number };
+
 export type AdjustVolumeCallback = (
   deviceId: string,
-  volumeDelta: number
-) => Promise<CallbackResult> | CallbackResult;
+  volumeDelta: number,
+  volumeDefault?: boolean
+) => Promise<AdjustVolumeResult> | AdjustVolumeResult;
 
 export interface IVolumeController {
+  /** Handle setVolume requests with an absolute volume. */
   onVolume(callback: VolumeCallback): void;
+  /** Handle relative volume changes; the optional third argument preserves volumeDefault. */
   onAdjustVolume(callback: AdjustVolumeCallback): void;
   sendVolumeEvent(volume: number, cause?: string): Promise<boolean>;
 }
@@ -78,11 +88,20 @@ export function VolumeController<T extends Constructor<SinricProDevice>>(Base: T
       }
 
       if (request.action === 'adjustVolume' && this.adjustVolumeCallback) {
-        const volumeDelta = request.requestValue.volumeDelta;
-        const result = await this.adjustVolumeCallback(this.getDeviceId(), volumeDelta);
+        // The protocol uses "volume" for both absolute values and relative deltas.
+        const volumeDelta = request.requestValue.volume;
+        const result = await this.adjustVolumeCallback(
+          this.getDeviceId(),
+          volumeDelta,
+          request.requestValue.volumeDefault
+        );
 
         // Handle both boolean and object return types
         let success: boolean;
+        // The server stores the response volume as the device's absolute level, so
+        // report the adjusted volume when the callback supplies one.
+        let volume = volumeDelta;
+
         if (typeof result === 'boolean') {
           success = result;
         } else {
@@ -90,10 +109,13 @@ export function VolumeController<T extends Constructor<SinricProDevice>>(Base: T
           if (result.message) {
             request.errorMessage = result.message;
           }
+          if (result.volume !== undefined) {
+            volume = result.volume;
+          }
         }
 
         if (success) {
-          request.responseValue.volume = volumeDelta;
+          request.responseValue.volume = volume;
         }
 
         return success;

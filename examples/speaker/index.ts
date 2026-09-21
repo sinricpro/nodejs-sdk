@@ -59,7 +59,8 @@ async function main() {
     console.log(`\n[Volume] Device ${deviceId} adjust by ${delta > 0 ? '+' : ''}${delta}`);
     speakerState.volume = Math.max(0, Math.min(100, speakerState.volume + delta));
     console.log(`  New volume: ${speakerState.volume}`);
-    return true;
+    // Report the adjusted level; SinricPro stores it as the device's volume.
+    return { success: true, volume: speakerState.volume };
   });
 
   // Mute control

@@ -1,5 +1,7 @@
 ## [6.0.0]
 
+fix: `onAdjustVolume` now receives the relative delta from the request's `volume` field instead of the nonexistent `volumeDelta` field. Its optional third argument exposes `volumeDefault` when supplied. Absolute `setVolume` requests continue to use `onVolume(deviceId, volume)`. `onAdjustVolume` can now return `{ success, volume }` to report the volume after the adjustment, which SinricPro stores as the device's absolute level; returning a plain boolean still echoes the delta.
+
 feat: Local control - devices answer signed commands over the LAN, so they keep working while SinricPro is unreachable.
 
 * UDP listener on port 3333, joined to multicast group `224.9.9.9` and answering unicast on the same port. Replies go back to the peer that sent the request, never to the cloud websocket.
