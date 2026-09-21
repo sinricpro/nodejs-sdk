@@ -17,11 +17,14 @@ export type VolumeCallback = (
 
 export type AdjustVolumeCallback = (
   deviceId: string,
-  volumeDelta: number
+  volumeDelta: number,
+  volumeDefault?: boolean
 ) => Promise<CallbackResult> | CallbackResult;
 
 export interface IVolumeController {
+  /** Handle setVolume requests with an absolute volume. */
   onVolume(callback: VolumeCallback): void;
+  /** Handle relative volume changes; the optional third argument preserves volumeDefault. */
   onAdjustVolume(callback: AdjustVolumeCallback): void;
   sendVolumeEvent(volume: number, cause?: string): Promise<boolean>;
 }
@@ -78,8 +81,13 @@ export function VolumeController<T extends Constructor<SinricProDevice>>(Base: T
       }
 
       if (request.action === 'adjustVolume' && this.adjustVolumeCallback) {
-        const volumeDelta = request.requestValue.volumeDelta;
-        const result = await this.adjustVolumeCallback(this.getDeviceId(), volumeDelta);
+        // The protocol uses "volume" for both absolute values and relative deltas.
+        const volumeDelta = request.requestValue.volume;
+        const result = await this.adjustVolumeCallback(
+          this.getDeviceId(),
+          volumeDelta,
+          request.requestValue.volumeDefault
+        );
 
         // Handle both boolean and object return types
         let success: boolean;
